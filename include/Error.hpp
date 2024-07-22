@@ -1,3 +1,7 @@
+
+#ifndef ERROR_HPP
+#define ERROR_HPP
+
 #include <exception>
 
 class MultipleDefinitionLocException : public std::exception
@@ -143,3 +147,5 @@ class MultipleDefinitionLocException : public std::exception
 			return "Error: Closing bracket is missing.\n";
 		}
 	};
+
+	#endif

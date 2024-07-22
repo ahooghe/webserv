@@ -4,12 +4,17 @@ CFLAGS = -Wall -Wextra -Werror -std=c++98 -g
 SRCS = \
     src/WebServer.cpp \
     src/main.cpp \
+    src/Response.cpp \
+    src/Request.cpp \
     src/Config-Http.cpp \
     src/Config-Server.cpp \
     src/Config-Location.cpp \
 
 HEADERS = \
+    include/Error.hpp \
+    include/Request.hpp \
     include/Config.hpp \
+    include/Response.hpp \
     include/WebServer.hpp \
 
 OBJS = $(SRCS:.cpp=.o)

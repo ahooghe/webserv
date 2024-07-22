@@ -120,3 +120,14 @@ std::string Location::getAlias() const
 {
 	return _alias;
 }
+
+Location &Location::operator=(const Location &src)
+{
+	this->_http = src.getHttp();
+	this->_https = src.getHttps();
+	this->_autoindex = src.getAutoindex();
+	this->_realLocation = src.getRealLocation();
+	this->_index = src.getIndex();
+	this->_alias = src.getAlias();
+	return (*this);
+}

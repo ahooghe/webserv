@@ -28,6 +28,10 @@ void WebServer::start()
     std::cout << "Starting server..." << std::endl;
     
     //test();
+    std::string temp = "GET /index.html HTTP/1.1\r\nHost: www.example.com\r\nUser-Agent: Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nAccept-Language: en-US,en;q=0.5\r\nAccept-Encoding: gzip, deflate\r\nConnection: keep-alive";
+    Request request(this->config, temp);
+    request.execute();
+    std::cout << request.getResponse() << std::endl;
 }
 
 //Testing all getters in Config.hpp

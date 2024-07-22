@@ -231,3 +231,21 @@ std::string Config::getErrorPage(int errorCode) const
 	return "";
 }
 
+std::map<int, Server> Config::getServers() const
+{
+	return this->_server;
+}
+
+std::map<int, std::string> Config::getErrorPages() const
+{
+	return this->_errorPages;
+}
+
+Config &Config::operator=(const Config &src)
+{
+	this->_server = src.getServers();
+	this->_clientMaxBodySize = src.getClientMaxBodySize();
+	this->_default = src.getDefault();
+	this->_errorPages = src.getErrorPages();
+	return (*this);
+}

@@ -15,6 +15,7 @@ void Server::initServer(std::string serverBlock)
 	bool atLeastOneLocation = false;
 	while(std::getline(server, line))
 	{
+		std::cout << line << std::endl;
 		if (line.find("location ") != std::string::npos)
 		{
 			atLeastOneLocation = true;
@@ -110,4 +111,24 @@ Location Server::getLocation(std::string path) const
 	if (_location.find(path) != _location.end())
 		return _location.at(path);
 	return Location(false);
+}
+
+std::map<std::string, std::string> Server::getCgiPaths() const
+{
+	return this->_cgiPath;
+}
+
+std::map<std::string, Location> Server::getLocations() const
+{
+	return this->_location;
+}
+
+Server &Server::operator=(const Server &src)
+{
+	this->_serverName = src.getServerName();
+	this->_root = src.getRoot();
+	this->_index = src.getIndex();
+	this->_cgiPath = src.getCgiPaths();
+	this->_location = src.getLocations();
+	return (*this);
 }
