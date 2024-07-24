@@ -69,6 +69,7 @@ private:
 	int							_default;
 	std::map<int, Server>		_server;
 	std::map<int, std::string>	_errorPages;
+	std::map<std::string, int>	_portHost;
 
 public:
 	Config();
@@ -85,6 +86,8 @@ public:
 	std::string					getErrorPage(int errorCode) const;
 	std::map<int, Server>		getServers() const;
 	std::map<int, std::string>	getErrorPages() const;
+	std::map<std::string, int>	getPortHosts() const;
+	int							getPortHost(std::string host) const;
 
 	Config &operator=(const Config &src);
 };

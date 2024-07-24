@@ -1,10 +1,11 @@
+#ifndef REQUEST_HPP
+#define REQUEST_HPP
+
 #include "Config.hpp"
-//#include "Response.hpp"
 #include <string>
 #include <map>
 #include <exception>
 
-//class Response;
 
 class Request
 {
@@ -19,16 +20,27 @@ class Request
 		std::string _body;
 		std::map<std::string, std::string> _headers;
 
-		Request();
 		void		_processRequest();
 		void		_errorCheck();
 	public:
+		Request();
 		Request(Config config, std::string request);
 		~Request();
 
 		void		execute();
 		std::string	getResponse();
+
+		std::string getMethod() const;
+		std::string getUri() const;
+		std::string getHttpVersion() const;
+		std::string getBody() const;
+		std::map<std::string, std::string> getHeaders() const;
+		Config getConfig() const;
+
+		Request &operator=(const Request src);
 };
+
+#endif
 
 // Example of a GET request (no body)
 		

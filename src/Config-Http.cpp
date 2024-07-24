@@ -162,6 +162,15 @@ void Config::initConfig(const char *path)
 				if (line.empty())
 					continue;
 				
+				if (line.find("server_name") != std::string::npos)
+				{
+					std::string host = line.substr(line.find("server_name") + 12);
+					host = host.substr(host.find_first_not_of(" \t"));
+					host = host.substr(0, host.find_last_not_of(" \t"));
+					this->_portHost[host] = port;
+					std::cout << host << " = " << port << std::endl;
+				}
+
 				//Remove comments and check end line syntaxing
 				size_t poundPos = line.find('#');
 				if (poundPos != std::string::npos)
@@ -247,5 +256,18 @@ Config &Config::operator=(const Config &src)
 	this->_clientMaxBodySize = src.getClientMaxBodySize();
 	this->_default = src.getDefault();
 	this->_errorPages = src.getErrorPages();
+	this->_portHost = src.getPortHosts();
 	return (*this);
+}
+
+int Config::getPortHost(std::string host) const
+{
+	if (this->_portHost.find(host) != this->_portHost.end())
+		return (this->_portHost.at(host));
+	return (0);
+}
+
+std::map<std::string, int> Config::getPortHosts() const
+{
+	return this->_portHost;
 }

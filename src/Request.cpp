@@ -1,4 +1,5 @@
 #include "../include/Request.hpp"
+#include "../include/Response.hpp"
 
 Request::Request()
 {
@@ -25,13 +26,43 @@ void Request::execute()
 std::string Request::getResponse()
 {
 	std::string response = this->_httpVersion;
-	/*if (this->_status == 0)
+	if (this->_status == 0)
 	{
-		Response resp(this);
-		resp.handleRequest();
-	}*/
+		Response resp(*this);
+		this->_status = resp.handleRequest();
+		switch(this->_status)
+		{
+			case 200:
+				response += " 200 OK\r\n\r\n" + resp.getResponse();
+				break;
+			case 201:
+				response += " 201 Created\r\n\r\n";
+				break;
+			case 204:
+				response += " 204 No Content\r\n\r\n";
+				break;
+			case 400:
+				response += " 400 Bad Request\r\n\r\n";
+				break;
+			case 403:
+				response += " 403 Forbidden\r\n\r\n";
+				break;
+			case 404:
+				response += " 404 Not Found\r\n\r\n";
+				break;
+			case 405:
+				response += " 405 Method Not Allowed\r\n\r\n";
+				break;
+			case 500:
+				response += " 500 Internal Server Error\r\n\r\n";
+				break;
+			default:
+				response += " 501 Not Implemented\r\n\r\n";
+				break;
+		}
+	}
 	if (this->_status == 400)
-		response += this->_status + "Bad Request";
+		response += this->_status + "Bad Request\r\n\r\n";
 	return (response);
 }
 
@@ -85,7 +116,7 @@ void Request::_processRequest()
 			else
 				headerValue.clear();
 
-			size_t end = headerValue.find_last_not_of(" \t");
+			size_t end = headerValue.find_last_not_of(" \t\r");
 			if (end != std::string::npos)
 				headerValue = headerValue.substr(0, end + 1);
 
@@ -118,4 +149,45 @@ void Request::_errorCheck()
 		throw std::exception();
 	if (this->_uri.find("/") == std::string::npos)
 		throw std::exception();
+}
+
+std::string Request::getMethod() const
+{
+	return this->_method;
+}
+
+std::string Request::getUri() const
+{
+	return this->_uri;
+}
+
+std::string Request::getHttpVersion() const
+{
+	return this->_httpVersion;
+}
+
+std::string Request::getBody() const
+{
+	return this->_body;
+}
+
+std::map<std::string, std::string> Request::getHeaders() const
+{
+	return this->_headers;
+}
+
+Config Request::getConfig() const
+{
+	return this->_config;
+}
+
+Request &Request::operator=(const Request src)
+{
+	this->_config = src.getConfig();
+	this->_method = src.getMethod();
+	this->_uri = src.getUri();
+	this->_httpVersion = src.getHttpVersion();
+	this->_body = src.getBody();
+	this->_headers = src.getHeaders();
+	return *this;
 }

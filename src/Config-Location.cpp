@@ -24,7 +24,6 @@ void Location::initLocation(std::string locationBlock)
 
 	while(std::getline(location, line))
 	{
-		std::cout << line << std::endl;
 		size_t poundPos = line.find('#');
 		if (poundPos != std::string::npos)
 			line = line.substr(0, (poundPos));

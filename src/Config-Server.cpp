@@ -15,7 +15,6 @@ void Server::initServer(std::string serverBlock)
 	bool atLeastOneLocation = false;
 	while(std::getline(server, line))
 	{
-		std::cout << line << std::endl;
 		if (line.find("location ") != std::string::npos)
 		{
 			atLeastOneLocation = true;
@@ -43,7 +42,7 @@ void Server::initServer(std::string serverBlock)
 		{
 			line = line.substr(line.find("server_name ") + 12);
 			line = line.substr(line.find_first_not_of(" \t"));
-			line = line.substr(0, line.find_last_not_of(" \t") + 1);
+			line = line.substr(0, line.find_last_not_of(" \t"));
 			if (line.find(" ") != std::string::npos || line.find("\t") != std::string::npos)
 				throw MultipleDefinitionSerException();
 			_serverName = line;
