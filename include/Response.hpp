@@ -8,6 +8,7 @@
 #include <dirent.h>
 #include <vector>
 #include <algorithm>
+#include <string>
 
 class Response
 {

@@ -127,7 +127,7 @@ int Response::_pushRequest()
             if (pos != std::string::npos)
             {
                 filename = line.substr(pos + 10);
-                if (filename.front() == '"' && filename.back() == '"')
+                if (filename[0] == '"' && filename[filename.size() - 1] == '"')
                     filename = filename.substr(1, filename.size() - 2);
             }
         }
@@ -277,10 +277,8 @@ int Response::_isFile(std::string path)
     char resolvedPath[PATH_MAX];
     if (realpath(path.c_str(), resolvedPath) == NULL)
         return 400;
-
-	if (access(path.c_str(), F_OK) != 0)
+	else if (access(path.c_str(), F_OK) != 0)
 		return 404;
-
 	struct stat path_stat;
 	if (stat(path.c_str(), &path_stat) == 0)
 	{
@@ -297,7 +295,7 @@ int Response::_isFile(std::string path)
 	}
 
 	std::ifstream file;
-	file.open(path);
+	file.open(path.c_str());
 	if (!file.is_open())
 		return 403;
 	return 0;
