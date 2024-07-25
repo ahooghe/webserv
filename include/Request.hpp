@@ -29,11 +29,13 @@ class Request
 
 		void		execute();
 		std::string	getResponse();
+		std::string makeErrorFile(int code);
 
 		std::string getMethod() const;
 		std::string getUri() const;
 		std::string getHttpVersion() const;
 		std::string getBody() const;
+		std::string backup500file();
 		std::map<std::string, std::string> getHeaders() const;
 		Config getConfig() const;
 

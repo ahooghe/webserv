@@ -2,6 +2,7 @@ NAME = webserver
 CC = g++
 CFLAGS = -Wall -Wextra -Werror -std=c++98 -g
 SRCS = \
+    src/Response-Helpers.cpp \
     src/WebServer.cpp \
     src/main.cpp \
     src/Response.cpp \
@@ -9,6 +10,8 @@ SRCS = \
     src/Config-Http.cpp \
     src/Config-Server.cpp \
     src/Config-Location.cpp \
+    src/Config-Getters.cpp \
+    src/Response-Getters.cpp \
 
 HEADERS = \
     include/Error.hpp \

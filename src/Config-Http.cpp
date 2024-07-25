@@ -62,8 +62,12 @@ void Config::errCheck()
 		_errorPages[403] = "default_files/err_pages/403.html";
 	if (_errorPages.find(404) == _errorPages.end())
 		_errorPages[404] = "default_files/err_pages/404.html";
+	if (_errorPages.find(405) == _errorPages.end())
+		_errorPages[405] = "default_files/err_pages/404.html";
 	if (_errorPages.find(500) == _errorPages.end())
 		_errorPages[500] = "default_files/err_pages/500.html";
+	if (_errorPages.find(501) == _errorPages.end())
+		_errorPages[501] = "default_files/err_pages/500.html";
 	if (_errorPages.find(502) == _errorPages.end())
 		_errorPages[502] = "default_files/err_pages/502.html";
 	if (_errorPages.find(503) == _errorPages.end())
@@ -216,40 +220,6 @@ void Config::initConfig(const char *path)
 	file.close();
 }
 
-int Config::getClientMaxBodySize() const
-{
-	return _clientMaxBodySize;
-}
-
-int Config::getDefault() const
-{
-	return _default;
-}
-
-Server Config::getServer(int serverPort) const
-{
-	if (_server.find(serverPort) != _server.end())
-		return _server.at(serverPort);
-	return _server.at(_default);
-}
-
-std::string Config::getErrorPage(int errorCode) const
-{
-	if (_errorPages.find(errorCode) != _errorPages.end())
-		return _errorPages.at(errorCode);
-	return "";
-}
-
-std::map<int, Server> Config::getServers() const
-{
-	return this->_server;
-}
-
-std::map<int, std::string> Config::getErrorPages() const
-{
-	return this->_errorPages;
-}
-
 Config &Config::operator=(const Config &src)
 {
 	this->_server = src.getServers();
@@ -260,14 +230,4 @@ Config &Config::operator=(const Config &src)
 	return (*this);
 }
 
-int Config::getPortHost(std::string host) const
-{
-	if (this->_portHost.find(host) != this->_portHost.end())
-		return (this->_portHost.at(host));
-	return (0);
-}
 
-std::map<std::string, int> Config::getPortHosts() const
-{
-	return this->_portHost;
-}

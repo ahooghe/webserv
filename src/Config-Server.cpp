@@ -83,45 +83,6 @@ void Server::initServer(std::string serverBlock)
 		throw NoLocationException();
 }
 
-std::string Server::getServerName() const
-{
-	return _serverName;
-}
-
-std::string Server::getRoot() const
-{
-	return _root;
-}
-
-std::string Server::getIndex() const
-{
-	return _index;
-}
-
-std::string Server::getCgiPath(std::string extension) const
-{
-	if (_cgiPath.find(extension) != _cgiPath.end())
-		return _cgiPath.at(extension);
-	return "";
-}
-
-Location Server::getLocation(std::string path) const
-{
-	if (_location.find(path) != _location.end())
-		return _location.at(path);
-	return Location(false);
-}
-
-std::map<std::string, std::string> Server::getCgiPaths() const
-{
-	return this->_cgiPath;
-}
-
-std::map<std::string, Location> Server::getLocations() const
-{
-	return this->_location;
-}
-
 Server &Server::operator=(const Server &src)
 {
 	this->_serverName = src.getServerName();

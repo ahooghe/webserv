@@ -89,37 +89,6 @@ void Location::initLocation(std::string locationBlock)
 			throw FormatException();
 	}
 }
-
-int Location::getHttp() const
-{
-	return _http;
-}
-
-int Location::getHttps() const
-{
-	return _https;
-}
-
-bool Location::getAutoindex() const
-{
-	return _autoindex;
-}
-
-bool Location::getRealLocation() const
-{
-	return _realLocation;
-}
-
-std::string Location::getIndex() const
-{
-	return _index;
-}
-
-std::string Location::getAlias() const
-{
-	return _alias;
-}
-
 Location &Location::operator=(const Location &src)
 {
 	this->_http = src.getHttp();

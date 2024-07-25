@@ -24,6 +24,7 @@ class Response
 		int			_isFile(std::string path);
 		int			_getRequestIndex();
 		int			_makeFile(const std::string &filename, const std::string &type, const std::string &content);
+		int			_handlePush(std::istringstream& body, std::string boundary);
 
 		Response();
 	public:
