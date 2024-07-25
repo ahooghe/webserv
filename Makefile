@@ -1,21 +1,23 @@
-NAME = webserver
+NAME = webserv_real
 CC = g++
 CFLAGS = -Wall -Wextra -Werror -std=c++98 -g
 SRCS = \
-    src/WebServer.cpp \
-    src/main.cpp \
-    src/Response.cpp \
     src/Request.cpp \
     src/Config-Http.cpp \
-    src/Config-Server.cpp \
+    src/WebServer.cpp \
+    src/Response.cpp \
     src/Config-Location.cpp \
+    src/main.cpp \
+    src/Server.cpp \
+    src/Config-Server.cpp \
 
 HEADERS = \
-    include/Error.hpp \
+    include/Server.hpp \
     include/Request.hpp \
+    include/WebServer.hpp \
+    include/Error.hpp \
     include/Config.hpp \
     include/Response.hpp \
-    include/WebServer.hpp \
 
 OBJS = $(SRCS:.cpp=.o)
 

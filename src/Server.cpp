@@ -6,16 +6,16 @@
 /*   By: brmajor <brmajor@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/24 11:42:06 by brmajor           #+#    #+#             */
-/*   Updated: 2024/07/25 15:44:54 by brmajor          ###   ########.fr       */
+/*   Updated: 2024/07/25 16:05:25 by brmajor          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/Server.hpp"
 #include "../include/Response.hpp"
 #include "../include/Request.hpp"
-#include "../include/Cgi.hpp"
+#include "../include/Config.hpp"
 
-Server::Server(in_port_t port, Port config)
+Servers::Servers(in_port_t port, Config config)
 {
 	this->_config = config;
 	this->_port = port;
@@ -25,15 +25,15 @@ Server::Server(in_port_t port, Port config)
 	FD_SET(_serverSocket, &_current_sockets);
 }
 
-Server::Server()
+Servers::Servers()
 {   
 }
 
-Server::~Server()
+Servers::~Servers()
 {   
 }
 
-void	Server::createServerSocket(in_port_t port)
+void	Servers::createServerSocket(in_port_t port)
 {
 	sockaddr_in		addr;
 	
@@ -61,7 +61,7 @@ void	Server::createServerSocket(in_port_t port)
 	}
 }
 
-void Server::pingServer()
+void Servers::pingServer()
 {
 	_ready_sockets = _current_sockets;
 		
@@ -89,7 +89,7 @@ void Server::pingServer()
 	}
 }
 
-int		Server::acceptConnection()
+int		Servers::acceptConnection()
 {
 	int	connectionSocket;
 
@@ -108,7 +108,7 @@ int		Server::acceptConnection()
 	return (connectionSocket);
 }
 
-void	Server::receiveRequest(int connectionSocket)
+void	Servers::receiveRequest(int connectionSocket)
 {	
 	char                 buffer[BUFSIZE];
 	ssize_t              bytesRead;
@@ -132,10 +132,10 @@ void	Server::receiveRequest(int connectionSocket)
     std::cerr << "Request received, it was:\n" << buffer << std::endl;
 	request.execute();
 	std::string response = request.getResponse();
-	send(connectionSocket, response, response.size(), 0);
+	send(connectionSocket, response.c_str(), response.size(), 0);
 }
 
-void    Server::setNonBlocking(int sockfd)
+void    Servers::setNonBlocking(int sockfd)
 {
 	int flags = fcntl(sockfd, F_GETFL, 0);
 	if (flags == -1) {

@@ -33,18 +33,18 @@
 class   Config;
 class	Request;
 
-class   Server
+class   Servers
 {
 	private:
 		in_port_t	_port;
 		int			_serverSocket;
-		Port		_config;
+		Config		_config;
 		fd_set		_current_sockets, _ready_sockets;
 
 	 public:
-		Server(in_port_t port, Port config);
-		Server();
-		~Server();
+		Servers(in_port_t port, Config config);
+		Servers();
+		~Servers();
 	
 		void        createServerSocket(in_port_t port);
 		void        pingServer();
