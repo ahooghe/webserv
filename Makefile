@@ -7,6 +7,7 @@ SRCS = \
     src/main.cpp \
     src/Response.cpp \
     src/Request.cpp \
+    src/Server.cpp \
     src/Config-Http.cpp \
     src/Config-Server.cpp \
     src/Config-Location.cpp \
@@ -14,6 +15,7 @@ SRCS = \
     src/Response-Getters.cpp \
 
 HEADERS = \
+    include/Server.hpp \
     include/Error.hpp \
     include/Request.hpp \
     include/Config.hpp \
