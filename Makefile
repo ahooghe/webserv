@@ -5,6 +5,7 @@ SRCS = \
     src/Response-Helpers.cpp \
     src/WebServer.cpp \
     src/main.cpp \
+    src/CGI.cpp \
     src/Response.cpp \
     src/Request.cpp \
     src/Server.cpp \
@@ -16,6 +17,7 @@ SRCS = \
     src/Response-Getters.cpp \
 
 HEADERS = \
+    include/CGI.hpp \
     include/Server.hpp \
     include/Error.hpp \
     include/Request.hpp \
