@@ -1,5 +1,6 @@
 #include "Config.hpp"
 #include "Request.hpp"
+#include "CGI.hpp"
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/stat.h>

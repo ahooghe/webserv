@@ -148,4 +148,12 @@ class MultipleDefinitionLocException : public std::exception
 		}
 	};
 
+	class ErrorFileException : public std::exception
+	{
+		virtual const char *what() const throw()
+		{
+			return "Error: A configurated error file does not exist or has permission issues.\n";
+		}
+	};
+
 	#endif

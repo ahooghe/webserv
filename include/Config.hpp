@@ -1,13 +1,16 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
+#include "Error.hpp"
 #include <map>
 #include <string>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <stdlib.h>
-#include "Error.hpp"
+#include <limits.h>
+#include <unistd.h>
+#include <sys/stat.h>
 
 class Location
 {
@@ -70,6 +73,8 @@ private:
 	std::map<int, Server>		_server;
 	std::map<int, std::string>	_errorPages;
 	std::map<std::string, int>	_portHost;
+
+	void								_checkErrorPages();
 
 public:
 	Config();

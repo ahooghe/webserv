@@ -9,6 +9,7 @@ SRCS = \
     src/Request.cpp \
     src/Server.cpp \
     src/Config-Http.cpp \
+    src/Config-ErrorCheck.cpp \
     src/Config-Server.cpp \
     src/Config-Location.cpp \
     src/Config-Getters.cpp \

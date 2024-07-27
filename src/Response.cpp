@@ -44,6 +44,16 @@ int Response::_getRequest()
 	Location location = _getLocation();
 	std::string path = _createPath();
 	int filetype = _isFile(path);
+	std::string filesuffix = this->_request.getUri().substr(this->_request.getUri().find_last_of("."));
+	if (filesuffix[0] != '.')
+		return 400;
+	if (filesuffix != ".html")
+	{
+		CGI cgi(this->_request);
+		int status = cgi.execute();
+		this->_response = cgi.getResponse();
+		return status;
+	}
 	if (location.getRealLocation() == false || path.empty())
 		return 400;
 	if (location.getAutoindex() == true && filetype == 1)
