@@ -28,6 +28,7 @@ The location container has multiple single-line directives. All of the directive
 
 The following is an example:
 
+```conf
 server <port>
 {
     server_name <servername>;
@@ -43,6 +44,7 @@ server <port>
         index <index file>;
     }
 }
+```
 
 ## Comments
 You can insert comments into a configuration file in two (2) manners. Everything behind a semicolon (;) until the linebreak will not be read. Option two (2) is inserting a pound sign at the front of your comment. Everything behind it, will not be read.
