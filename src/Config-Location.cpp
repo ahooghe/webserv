@@ -2,10 +2,11 @@
 
 Location::Location()
 {
-	_http = 0;
-	_https = 0;
+	_http = true;
+	_https = false;
 	_autoindex = false;
 	_realLocation = true;
+	_httpcounter = 0;
 }
 
 Location::Location(bool fake)
@@ -37,23 +38,13 @@ void Location::initLocation(std::string locationBlock)
 
 		if (line.find("listen_http ") != std::string::npos)
 		{
-			line = line.substr(line.find("listen_http ") + 12);
-			line = line.substr(line.find_first_not_of(" \t"));
-			line = line.substr(0, line.find_last_not_of(" \t") + 1);
-			std::istringstream ss(line);
-			char extra;
-			if (!(ss >> _http) || _http < 0 || ss >> extra)
-				throw FormatException();
+			_httpcounter++;
 		}
 		else if (line.find("listen_https") != std::string::npos)
 		{
-			line = line.substr(line.find("listen_https ") + 13);
-			line = line.substr(line.find_first_not_of(" \t"));
-			line = line.substr(0, line.find_last_not_of(" \t") + 1);
-			std::istringstream ss(line);
-			char extra;
-			if (!(ss >> _https) || _https < 0 || ss >> extra)
-				throw FormatException();
+			this->_https = true;
+			this->_http = false;
+			_httpcounter++;
 		}
 		else if (line.find("auto_index ") != std::string::npos)
 		{
@@ -88,6 +79,8 @@ void Location::initLocation(std::string locationBlock)
 		else
 			throw FormatException();
 	}
+	if (this->_httpcounter > 1)
+		throw FormatException();
 }
 Location &Location::operator=(const Location &src)
 {

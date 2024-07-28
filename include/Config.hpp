@@ -15,12 +15,13 @@
 class Location
 {
 private:
-	int			_http;
-	int			_https;
+	bool		_http;
+	bool		_https;
 	bool		_autoindex;
 	bool		_realLocation;
 	std::string	_index;
 	std::string	_alias;
+	int			_httpcounter;
 
 public:
 	Location();
