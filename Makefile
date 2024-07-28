@@ -6,6 +6,7 @@ SRCS = \
     src/WebServer.cpp \
     src/main.cpp \
     src/CGI.cpp \
+    src/CGI-helper.cpp \
     src/Response.cpp \
     src/Request.cpp \
     src/Server.cpp \

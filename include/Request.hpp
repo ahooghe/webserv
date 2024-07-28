@@ -2,10 +2,6 @@
 #define REQUEST_HPP
 
 #include "Config.hpp"
-#include <string>
-#include <map>
-#include <exception>
-
 
 class Request
 {

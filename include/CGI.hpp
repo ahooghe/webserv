@@ -1,9 +1,12 @@
-#include "Request.hpp"
-#include <string>
-#include <cstring>
-#include <sys/wait.h>
+#ifndef CGI_HPP
+#define CGI_HPP
 
 #define CGI_BUFF 4096
+
+#include <sys/wait.h>
+#include <cstring>
+
+#include "Request.hpp"
 
 class CGI
 {
@@ -12,7 +15,7 @@ class CGI
 		std::string _response;
 		
 		CGI();
-		char **_buildEnv(std::string filePath, std::string cgiPath);
+		char **_buildEnv(std::string filePath);
 	
 	public:
 		CGI(Request request);
@@ -21,3 +24,5 @@ class CGI
 		int				execute();
 		std::string		getResponse();
 };
+
+#endif

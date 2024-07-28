@@ -1,6 +1,9 @@
-#include "Config.hpp"
-#include "Request.hpp"
+#ifndef WEBSERVER_HPP
+#define WEBSERVER_HPP
+
 #include <iostream>
+
+#include "Config.hpp"
 
 class WebServer
 {
@@ -16,3 +19,5 @@ public:
 
     void test();
 };
+
+#endif

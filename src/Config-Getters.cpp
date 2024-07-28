@@ -49,6 +49,16 @@ std::map<int, std::string> Config::getErrorPages() const
 	return this->_errorPages;
 }
 
+int *Config::getPorts() const
+{
+	return this->_ports;
+}
+
+int Config::getTotalports() const
+{
+	return this->_totalports;
+}
+
 /************/
 /*  SERVER  */
 /************/
