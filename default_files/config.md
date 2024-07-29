@@ -24,7 +24,7 @@ error_page 404 /404.html;
 A top-level directive, referred to as a context, groups together the directives that apply to different servers. Each single-line directive must end with a semicolon (`;`). These directives include `server_name`, `root`, `index`, `cgi_path`, and the container `location`. Every server must have a single `server_name`, `root`, `index`, and `location`. `cgi_path` is an optional directive, which can appear multiple times, as can the `location` container. A single configuration file can have as many servers as required, as long as each has a unique port.
 
 ### Locations
-The `location` container has multiple single-line directives. All of the directives are optional. Each directive must end with a semicolon (`;`). If the location has no directives, the files in the given location will be served. Depending on the directives, the location of these files, or what is served, may change. The possible directives are: `listen_http`, `listen_https`, `alias`, `auto_index`, and `index`. For the `listen_http`/`listen_https` directives specifically, only one of the two may be included. If both are present, the server won't launch. If neither is present, the server will default to `http`.
+The `location` container has multiple single-line directives. All of the directives are optional. Each directive must end with a semicolon (`;`). If the location has no directives, the files in the given location will be served. Depending on the directives, the location of these files, or what is served, may change. The possible directives are: `listen_http`, `listen_https`, `alias`, `auto_index`, `limit_except`, and `index`. For the `listen_http`/`listen_https` directives specifically, only one of the two may be included. If both are present, the server won't launch. If neither is present, the server will default to `http`.
 
 The following is an example:
 
@@ -42,6 +42,7 @@ server <port>
         alias <path to actual files>;
         auto_index on;
         index <index file>;
+        limit_except <HTTP Method>
     }
 }
 ```
