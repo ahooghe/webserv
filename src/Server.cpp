@@ -6,7 +6,7 @@
 /*   By: brmajor <brmajor@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/24 11:42:06 by brmajor           #+#    #+#             */
-/*   Updated: 2024/07/25 16:05:25 by brmajor          ###   ########.fr       */
+/*   Updated: 2024/07/29 14:18:32 by brmajor          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,11 @@
 #include "../include/Request.hpp"
 #include "../include/Config.hpp"
 
-Servers::Servers(in_port_t port, Config config)
+Servers::Servers(Config config)
 {
 	this->_config = config;
-	this->_port = port;
-	createServerSocket(port);
+	this->_ports = ports;
+	createServerSocket();
 
 	FD_ZERO(&_current_sockets);
 	FD_SET(_serverSocket, &_current_sockets);
@@ -33,12 +33,34 @@ Servers::~Servers()
 {   
 }
 
-void	Servers::createServerSocket(in_port_t port)
+void	Servers::createServerSocket()
 {
 	sockaddr_in		addr;
-	
-	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-	if (_serverSocket == -1)
+	_total_ports = getTotalports();
+	int		ports[_total_ports] = getPorts();
+
+	for (int i = 0; i < total_ports; ++i)
+	{
+		_serverSockets.push_back(makeSocket(ports[i]))
+		if (setsockopt(_serverSockets[i], SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) < 0)
+		{
+			perror("error: setsockopt");
+		}
+		if ((bind(_serverSockets[i], (struct sockaddr*)&addr, sizeof(sockaddr))) == -1)
+		{
+			perror("error: bind");
+		}
+		if ((listen(_serverSockets[i], 10)) == -1)
+		{
+			perror("error: listen");
+		}
+	}
+}
+
+void	Servers::makeSocket(int port)
+{
+	int	serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (serverSocket == -1)
 	{
 		perror("error: socket");
 	}
@@ -47,18 +69,7 @@ void	Servers::createServerSocket(in_port_t port)
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	addr.sin_port = htons(port);
 	int	reuse = 1;
-	if (setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) < 0)
-	{
-		perror("error: setsockopt");
-	}
-	if ((bind(_serverSocket, (struct sockaddr*)&addr, sizeof(sockaddr))) == -1)
-	{
-		perror("error: bind");
-	}
-	if ((listen(_serverSocket, 10)) == -1)
-	{
-		perror("error: listen");
-	}
+
 }
 
 void Servers::pingServer()
@@ -96,16 +107,18 @@ int		Servers::acceptConnection()
 	sockaddr	socketAddress;
 	socklen_t	socketAdressLen = sizeof(socketAddress);
 	
-	if ((connectionSocket = accept(_serverSocket, &socketAddress, &socketAdressLen)) == -1)
+	for (int i = 0; i < _total_ports; i++)
 	{
-		perror("error: accept");
+		if ((connectionSocket = accept(_serverSockets[i], &socketAddress, &socketAdressLen)) != -1)
+		{
+			sockaddr_in* addr_in = (sockaddr_in *)&socketAddress;
+			char ip[INET_ADDRSTRLEN];
+			inet_ntop(AF_INET, &(addr_in->sin_addr), ip, INET_ADDRSTRLEN);
+			std::cout << "IPv4 Address: " << ip << ", Port: " << ntohs(addr_in->sin_port) << std::endl;
+			return (connectionSocket);
+		}
 	}
-	sockaddr_in* addr_in = (sockaddr_in *)&socketAddress;
-	char ip[INET_ADDRSTRLEN];
-	inet_ntop(AF_INET, &(addr_in->sin_addr), ip, INET_ADDRSTRLEN);
-	std::cout << "IPv4 Address: " << ip << ", Port: " << ntohs(addr_in->sin_port) << std::endl;
-	
-	return (connectionSocket);
+	perror("error: accept");
 }
 
 void	Servers::receiveRequest(int connectionSocket)

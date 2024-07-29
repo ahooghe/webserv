@@ -27,7 +27,7 @@
 #include "Error.hpp"
 #include "Request.hpp"
 
-//#define SERVER_PORT 8000
+#define MAX_PORTS	5
 #define BUFSIZE     4096
 
 class   Config;
@@ -36,17 +36,18 @@ class	Request;
 class   Servers
 {
 	private:
-		in_port_t	_port;
-		int			_serverSocket;
-		Config		_config;
-		fd_set		_current_sockets, _ready_sockets;
+		std::vector<int>	_serverSockets;
+		int					_total_ports;
+		Config				_config;
+		fd_set				_current_sockets, _ready_sockets;
 
 	 public:
-		Servers(in_port_t port, Config config);
+		Servers(Config config);
 		Servers();
 		~Servers();
 	
-		void        createServerSocket(in_port_t port);
+		void        createServerSocket();
+		void		makeSocket(int port);
 		void        pingServer();
 		int         acceptConnection();
 		void        receiveRequest(int connectionSocket);
