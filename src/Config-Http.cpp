@@ -2,74 +2,14 @@
 
 Config::Config()
 {
-	//1000000 bytes = 1MB
 	_clientMaxBodySize = 1000000;
 }
 
 Config::~Config()
 {
-}
+	if (this->_totalports)
+		delete[] this->_ports;
 
-void Config::checkFormat(const char *path)
-{
-	std::ifstream file(path);
-	if (!file.is_open())
-		throw FileOpenException();
-	std::string line;
-	while (std::getline(file, line))
-	{
-		if (line.empty())
-			continue;
-		if (line.find_first_not_of(" \t") == std::string::npos || line.find_last_not_of(" \t") == std::string::npos)
-			continue;
-		line = line.substr(line.find_first_not_of(" \t"));
-		line = line.substr(0, line.find_last_not_of(" \t") + 1);
-		if (line.empty())
-			continue;
-		size_t semiColonPos = line.find(';');
-		if (line.find("server ") != std::string::npos || line.find("location ") != std::string::npos)
-			continue;
-		if (line.find("{") != std::string::npos)
-		{
-			if (line != "{")
-				throw BracketException();
-		}
-		else if (line.find("}") != std::string::npos)
-		{
-			if (line != "}")
-				throw BracketException();
-		}
-		else if (semiColonPos == std::string::npos || semiColonPos == 0)
-			throw SemiColonException();
-	}
-	file.close();
-}
-
-void Config::errCheck()
-{
-	//If 0, there's no server block in the config
-	if (_default == 0)
-		throw NoServerException();
-
-	//Checking whether all the optional variables in the config file were setup. If not, applying default value
-	if (_clientMaxBodySize == 0)
-		_clientMaxBodySize = 1000000;
-	if (_errorPages.find(400) == _errorPages.end())
-		_errorPages[400] = "default_files/err_pages/400.html";
-	if (_errorPages.find(401) == _errorPages.end())
-		_errorPages[401] = "default_files/err_pages/401.html";
-	if (_errorPages.find(403) == _errorPages.end())
-		_errorPages[403] = "default_files/err_pages/403.html";
-	if (_errorPages.find(404) == _errorPages.end())
-		_errorPages[404] = "default_files/err_pages/404.html";
-	if (_errorPages.find(500) == _errorPages.end())
-		_errorPages[500] = "default_files/err_pages/500.html";
-	if (_errorPages.find(502) == _errorPages.end())
-		_errorPages[502] = "default_files/err_pages/502.html";
-	if (_errorPages.find(503) == _errorPages.end())
-		_errorPages[503] = "default_files/err_pages/503.html";
-	if (_errorPages.find(504) == _errorPages.end())
-		_errorPages[504] = "default_files/err_pages/504.html";
 }
 
 void Config::initConfig(const char *path)
@@ -83,30 +23,21 @@ void Config::initConfig(const char *path)
 	std::string line;
 	while (std::getline(file, line))
 	{
-		//Empty lines are ignored
 		if (line.empty())
 			continue;
-		//Remove comments and check end line syntaxing
 		size_t poundPos = line.find('#');
 		if (poundPos != std::string::npos)
 			line = line.substr(0, (poundPos));
 
-		//Remove leading and trailing whitespaces
 		line = line.substr(line.find_first_not_of(" \t"));
 		line = line.substr(0, line.find_last_not_of(" \t") + 1);
 
-		//Checks for different parts of file
 		if (line.find("client_max_body_size") != std::string::npos)
 		{
 			size_t semiColonPos = line.find(';');
 			if (semiColonPos != std::string::npos)
 				line = line.substr(0, semiColonPos);
 			
-			/*
-			Making a substring of the integer part in the config file
-			and removing all the spaces in front and behind the value (just in case :p) 
-			Then using a string stream conversion to make sure errors are handled properly.
-			*/
 			std::string value = line.substr(line.find("client_max_body_size") + 20);
 			value = value.substr(value.find_first_not_of(" \t"));
 			value = value.substr(0, value.find_last_not_of(" \t") + 1);
@@ -121,7 +52,6 @@ void Config::initConfig(const char *path)
 			size_t semiColonPos = line.find(';');
 			if (semiColonPos != std::string::npos)
 				line = line.substr(0, semiColonPos);
-			//Getting the error code and file path seperated
 			std::string errorPage = line.substr(line.find("error_page") + 10);
 			errorPage = errorPage.substr(errorPage.find_first_not_of(" \t"));
 			std::string errorCode = errorPage.substr(0, errorPage.find_first_of(" \t"));
@@ -129,14 +59,12 @@ void Config::initConfig(const char *path)
 			errorPage = errorPage.substr(errorPage.find_first_not_of(" \t"));
 			std::string errorPath = errorPage.substr(0, errorPage.find_first_of(" \t"));
 
-			//Same conversion method as above
 			std::istringstream iss(errorCode);
 			char extra;
 			int code;
 			if (!(iss >> code) || code < 0 || iss >> extra)
 				throw ErrorCodeException();
 
-			//Checking if the error code is already defined
 			if (_errorPages.find(code) == _errorPages.end())
 				_errorPages[code] = errorPath;
 			else
@@ -158,7 +86,6 @@ void Config::initConfig(const char *path)
 				throw OpeningBracketException();
 			while (std::getline(file, line))
 			{
-				//If brackets is 0, we should be done with the current server block
 				if (line.empty())
 					continue;
 				
@@ -168,10 +95,8 @@ void Config::initConfig(const char *path)
 					host = host.substr(host.find_first_not_of(" \t"));
 					host = host.substr(0, host.find_last_not_of(" \t"));
 					this->_portHost[host] = port;
-					std::cout << host << " = " << port << std::endl;
 				}
 
-				//Remove comments and check end line syntaxing
 				size_t poundPos = line.find('#');
 				if (poundPos != std::string::npos)
 					line = line.substr(0, (poundPos));
@@ -214,40 +139,15 @@ void Config::initConfig(const char *path)
 			throw FormatException();
 	}
 	file.close();
-}
 
-int Config::getClientMaxBodySize() const
-{
-	return _clientMaxBodySize;
-}
-
-int Config::getDefault() const
-{
-	return _default;
-}
-
-Server Config::getServer(int serverPort) const
-{
-	if (_server.find(serverPort) != _server.end())
-		return _server.at(serverPort);
-	return _server.at(_default);
-}
-
-std::string Config::getErrorPage(int errorCode) const
-{
-	if (_errorPages.find(errorCode) != _errorPages.end())
-		return _errorPages.at(errorCode);
-	return "";
-}
-
-std::map<int, Server> Config::getServers() const
-{
-	return this->_server;
-}
-
-std::map<int, std::string> Config::getErrorPages() const
-{
-	return this->_errorPages;
+	this->_ports = new int[this->_portHost.size()];
+	int i = 0;
+	for (std::map<std::string, int>::iterator it = this->_portHost.begin(); it != this->_portHost.end(); ++it)
+	{
+		this->_ports[i] = it->second;
+		i++;
+	}
+	this->_totalports = i;
 }
 
 Config &Config::operator=(const Config &src)
@@ -257,17 +157,9 @@ Config &Config::operator=(const Config &src)
 	this->_default = src.getDefault();
 	this->_errorPages = src.getErrorPages();
 	this->_portHost = src.getPortHosts();
+	this->_totalports = src.getTotalports();
+	this->_ports = src.getPorts();
 	return (*this);
 }
 
-int Config::getPortHost(std::string host) const
-{
-	if (this->_portHost.find(host) != this->_portHost.end())
-		return (this->_portHost.at(host));
-	return (0);
-}
 
-std::map<std::string, int> Config::getPortHosts() const
-{
-	return this->_portHost;
-}

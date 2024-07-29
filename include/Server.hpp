@@ -14,17 +14,12 @@
 #pragma once
 
 #include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
 #include <sys/socket.h>
 #include <sys/wait.h>
-#include <unistd.h>
 #include <arpa/inet.h>
 #include <strings.h>
 #include <fcntl.h>
-#include "Config.hpp"
-#include "Error.hpp"
+
 #include "Request.hpp"
 
 #define MAX_PORTS	5

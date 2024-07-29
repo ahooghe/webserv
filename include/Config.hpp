@@ -1,23 +1,27 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
-#include <map>
 #include <string>
+#include <map>
 #include <fstream>
-#include <iostream>
 #include <sstream>
+#include <limits.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <stdlib.h>
+
 #include "Error.hpp"
 
 class Location
 {
 private:
-	int			_http;
-	int			_https;
+	bool		_http;
+	bool		_https;
 	bool		_autoindex;
 	bool		_realLocation;
 	std::string	_index;
 	std::string	_alias;
+	int			_httpcounter;
 
 public:
 	Location();
@@ -67,18 +71,21 @@ class Config
 private:
 	int							_clientMaxBodySize;
 	int							_default;
+	int							*_ports;
+	int							_totalports;
 	std::map<int, Server>		_server;
 	std::map<int, std::string>	_errorPages;
 	std::map<std::string, int>	_portHost;
+
+	void								_checkErrorPages();
 
 public:
 	Config();
 	~Config();
 
 	void						checkFormat(const char *path);
-	void						errCheck();
-
 	void						initConfig(const char *path);
+	void						errCheck();
 
 	int							getClientMaxBodySize() const;
 	int							getDefault() const;
@@ -88,6 +95,8 @@ public:
 	std::map<int, std::string>	getErrorPages() const;
 	std::map<std::string, int>	getPortHosts() const;
 	int							getPortHost(std::string host) const;
+	int							*getPorts() const;
+	int							getTotalports() const;
 
 	Config &operator=(const Config &src);
 };

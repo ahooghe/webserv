@@ -26,6 +26,8 @@ void Request::execute()
 std::string Request::getResponse()
 {
 	std::string response = this->_httpVersion;
+	if (this->_status == 400)
+		response += this->_status + "400 Bad Request\r\n\r\n" + makeErrorFile(this->_status);
 	if (this->_status == 0)
 	{
 		Response resp(*this);
@@ -42,27 +44,25 @@ std::string Request::getResponse()
 				response += " 204 No Content\r\n\r\n";
 				break;
 			case 400:
-				response += " 400 Bad Request\r\n\r\n";
+				response += " 400 Bad Request\r\n\r\n" + makeErrorFile(this->_status);
 				break;
 			case 403:
-				response += " 403 Forbidden\r\n\r\n";
+				response += " 403 Forbidden\r\n\r\n" + makeErrorFile(this->_status);
 				break;
 			case 404:
-				response += " 404 Not Found\r\n\r\n";
+				response += " 404 Not Found\r\n\r\n" + makeErrorFile(this->_status);
 				break;
 			case 405:
-				response += " 405 Method Not Allowed\r\n\r\n";
+				response += " 405 Method Not Allowed\r\n\r\n" + makeErrorFile(this->_status);
 				break;
 			case 500:
-				response += " 500 Internal Server Error\r\n\r\n";
+				response += " 500 Internal Server Error\r\n\r\n" + makeErrorFile(this->_status);
 				break;
 			default:
-				response += " 501 Not Implemented\r\n\r\n";
+				response += " 501 Not Implemented\r\n\r\n" + makeErrorFile(this->_status);
 				break;
 		}
 	}
-	if (this->_status == 400)
-		response += this->_status + "Bad Request\r\n\r\n";
 	return (response);
 }
 
@@ -151,6 +151,19 @@ void Request::_errorCheck()
 		throw std::exception();
 }
 
+std::string Request::makeErrorFile(int code)
+{
+	std::string filePath = this->_config.getErrorPage(code);
+	std::ifstream file;
+	std::stringstream ret;
+	file.open(filePath.c_str());
+	if (file.is_open())
+		ret << file.rdbuf();
+	else
+		return (backup500file());
+	return ret.str();
+}
+
 std::string Request::getMethod() const
 {
 	return this->_method;
@@ -190,4 +203,10 @@ Request &Request::operator=(const Request src)
 	this->_body = src.getBody();
 	this->_headers = src.getHeaders();
 	return *this;
+}
+
+std::string Request::backup500file()
+{
+	std::string backup = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n\t<meta charset=\"UTF-8\">\n\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\t<title>Error 500 - Internal Server Error</title>\n\t<style>\n\t\tbody {\n\t\t\tdisplay: flex;\n\t\t\tjustify-content: center;\n\t\t\talign-items: center;\n\t\t\theight: 100vh;\n\t\t\tfont-family: Arial, sans-serif;\n\t\t\tbackground-color: #f0f0f0;\n\t\t}\n\t\t.container {\n\t\t\ttext-align: center;\n\t\t}\n\t</style>\n</head>\n<body>\n\t<div class=\"container\">\n\t\t<h1>Error 500</h1>\n\t\t<p>Internal Server Error</p>\n\t\t<p>The server encountered an internal error and was unable to complete your request.</p>\n\t</div>\n</body>\n</html>";
+	return backup;
 }
