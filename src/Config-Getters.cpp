@@ -126,6 +126,21 @@ bool Location::getRealLocation() const
 	return _realLocation;
 }
 
+bool Location::getGet() const
+{
+	return _get;
+}
+
+bool Location::getDelete() const
+{
+	return _delete;
+}
+
+bool Location::getPush() const
+{
+	return _push;
+}
+
 std::string Location::getIndex() const
 {
 	return _index;

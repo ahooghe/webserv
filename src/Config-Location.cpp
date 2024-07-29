@@ -1,4 +1,5 @@
 #include "../include/Config.hpp"
+#include <iostream>
 
 Location::Location()
 {
@@ -7,6 +8,9 @@ Location::Location()
 	_autoindex = false;
 	_realLocation = true;
 	_httpcounter = 0;
+	_get = true;
+	_push = true;
+	_delete = true;
 }
 
 Location::Location(bool fake)
@@ -82,6 +86,22 @@ void Location::initLocation(std::string locationBlock)
 				throw MultipleDefinitionLocException();
 			_alias = line;
 		}
+		else if (line.find("limit_except ") != std::string::npos)
+		{
+			line = line.substr(13);
+			std::istringstream iss(line);
+			std::string var1, var2, var3;
+			this->_get = false;
+			std::cout << var1 << var2 << var3 << std::endl;
+			if (var1 == "GET" || var2 == "GET" || var3 == "GET")
+				this->_get = true;
+			this->_delete = false;
+			if (var1 == "DELETE" || var2 == "DELETE" || var3 == "DELETE")
+				this->_delete = true;
+			this->_push = false;
+			if (var1 == "PUSH" || var2 == "PUSH" || var3 == "PUSH")
+				this->_push = true;
+		}
 		else
 			throw FormatException();
 	}
@@ -96,5 +116,8 @@ Location &Location::operator=(const Location &src)
 	this->_realLocation = src.getRealLocation();
 	this->_index = src.getIndex();
 	this->_alias = src.getAlias();
+	this->_get = src.getGet();
+	this->_delete = src.getDelete();
+	this->_push = src.getPush();
 	return (*this);
 }

@@ -34,6 +34,7 @@ std::string Request::getResponse()
 	{
 		Response resp(*this);
 		this->_status = resp.handleRequest();
+		std::cout << this->_status << std::endl;
 		switch(this->_status)
 		{
 			case 200:

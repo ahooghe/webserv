@@ -45,6 +45,8 @@ int Response::_getRequest()
 	Location location = _getLocation();
 	std::string path = _createPath();
 	int filetype = _isFile(path);
+	if (location.getGet() == false)
+		return 405;
 	std::string filesuffix = "";
 	if (path.find(".") != std::string::npos)
 		filesuffix = path.substr(path.find("."));
@@ -74,6 +76,9 @@ int Response::_getRequest()
 int Response::_deleteRequest()
 {
 	std::string path = _createPath();
+	Location location = _getLocation();
+	if (location.getDelete() == false)
+		return 405;
 	if (path.empty())
 		return 400;
 	pid_t pid = fork();
@@ -98,6 +103,9 @@ int Response::_deleteRequest()
 
 int Response::_pushRequest()
 {
+	Location location = _getLocation();
+	if (location.getPush() == false)
+		return 405;
 	std::map<std::string, std::string> headers = this->_request.getHeaders();
 	if (headers.find("Content-Type") == headers.end() || headers["Content-Type"].find("multipart/form-data") == std::string::npos)
 		return 400;

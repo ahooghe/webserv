@@ -19,6 +19,9 @@ private:
 	bool		_https;
 	bool		_autoindex;
 	bool		_realLocation;
+	bool		_get;
+	bool		_delete;
+	bool		_push;
 	std::string	_index;
 	std::string	_alias;
 	int			_httpcounter;
@@ -34,6 +37,9 @@ public:
 	int			getHttps() const;
 	bool		getAutoindex() const;
 	bool		getRealLocation() const;
+	bool		getGet() const;
+	bool		getDelete() const;
+	bool		getPush() const;
 	std::string	getIndex() const;
 	std::string	getAlias() const;
 

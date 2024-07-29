@@ -3,30 +3,30 @@
 
 int Response::_makeFile(const std::string &filename, const std::string &type, const std::string &content)
 {
-    std::ofstream file;
-    if (type == "text/plain")
-    {
-        file.open(filename.c_str());
-    }
-    else
-    {
-        file.open(filename.c_str(), std::ios::binary);
-    }
+	std::ofstream file;
+	if (type == "text/plain")
+	{
+		file.open(filename.c_str());
+	}
+	else
+	{
+		file.open(filename.c_str(), std::ios::binary);
+	}
 
-    if (!file.is_open())
-        return 0;
+	if (!file.is_open())
+		return 0;
 
-    if (type == "text/plain")
-    {
-        file << content;
-    }
-    else
-    {
-        file.write(content.data(), content.size());
-    }
+	if (type == "text/plain")
+	{
+		file << content;
+	}
+	else
+	{
+		file.write(content.data(), content.size());
+	}
 
-    file.close();
-    return 1;
+	file.close();
+	return 1;
 }
 
 std::string Response::_createPath()
@@ -72,9 +72,9 @@ std::string Response::_createPath()
 				uriPath = location.getAlias();
 			
 			if (location.getIndex().empty())
-				requestedFile += uriPath + server.getIndex();
+				requestedFile += uriPath + uriWithoutLoc + "/" + server.getIndex();
 			else
-				requestedFile += uriPath + location.getIndex();
+				requestedFile += uriPath + uriWithoutLoc + "/" + location.getIndex();
 		}
 	}
 	else if (location.getAutoindex() == true)
@@ -83,21 +83,19 @@ std::string Response::_createPath()
 	}
 	else
 	{
+		if (!location.getAlias().empty())
+			uriPath = location.getAlias();
 		if (location.getIndex().empty())
-			requestedFile += uriPath + server.getIndex();
+			requestedFile += uriPath + "/" + server.getIndex();
 		else
-			requestedFile += uriPath + location.getIndex();
+			requestedFile += uriPath + "/" + location.getIndex();
 	}
 	return (requestedFile);
 }
 
 int Response::_isFile(std::string path)
 {
-    char resolvedPath[PATH_MAX];
-    if (realpath(path.c_str(), resolvedPath) == NULL)
-        return 400;
-	else if (access(path.c_str(), F_OK) != 0)
-		return 404;
+	
 	struct stat path_stat;
 	if (stat(path.c_str(), &path_stat) == 0)
 	{
@@ -112,7 +110,15 @@ int Response::_isFile(std::string path)
 		else if (S_ISCHR(path_stat.st_mode) || S_ISBLK(path_stat.st_mode))
 			return 403;
 	}
+	if (access(path.c_str(), F_OK) != 0)
+		return 404;
 
+	char resolvedPath[PATH_MAX];
+	if (realpath(path.c_str(), resolvedPath) == NULL)
+	{
+		return 400;
+	}
+	
 	std::ifstream file;
 	file.open(path.c_str());
 	if (!file.is_open())
