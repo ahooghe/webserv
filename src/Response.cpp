@@ -46,10 +46,9 @@ int Response::_getRequest()
 	std::string path = _createPath();
 	int filetype = _isFile(path);
 	std::string filesuffix = "";
-	
 	if (path.find(".") != std::string::npos)
 		filesuffix = path.substr(path.find("."));
-	if (filesuffix != ".html")
+	if (!filesuffix.empty() && filesuffix != ".html")
 	{
 		CGI cgi(this->_request);
 		int status = cgi.execute();

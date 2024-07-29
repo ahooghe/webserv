@@ -6,7 +6,7 @@
 /*   By: ahooghe <ahooghe@student.s19.be>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/24 11:42:06 by brmajor           #+#    #+#             */
-/*   Updated: 2024/07/29 20:28:08 by ahooghe          ###   ########.fr       */
+/*   Updated: 2024/07/29 23:23:41 by ahooghe          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,7 +151,9 @@ void	Servers::receiveRequest(int connectionSocket)
     std::cerr << "Request received, it was:\n" << buffer << std::endl;
 	request.execute();
 	std::string response = request.getResponse();
+
 	send(connectionSocket, response.c_str(), response.size(), 0);
+	close(connectionSocket);
 }
 
 void    Servers::setNonBlocking(int sockfd)
