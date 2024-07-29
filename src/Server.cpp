@@ -6,7 +6,7 @@
 /*   By: brmajor <brmajor@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/24 11:42:06 by brmajor           #+#    #+#             */
-/*   Updated: 2024/07/29 14:18:32 by brmajor          ###   ########.fr       */
+/*   Updated: 2024/07/29 14:44:53 by brmajor          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,9 @@
 Servers::Servers(Config config)
 {
 	this->_config = config;
-	this->_ports = ports;
 	createServerSocket();
 
-	FD_ZERO(&_current_sockets);
-	FD_SET(_serverSocket, &_current_sockets);
+
 }
 
 Servers::Servers()
@@ -36,13 +34,15 @@ Servers::~Servers()
 void	Servers::createServerSocket()
 {
 	sockaddr_in		addr;
-	_total_ports = getTotalports();
-	int		ports[_total_ports] = getPorts();
+	_total_ports = _config.getTotalports();
+	int		*ports = _config.getPorts();
+	int		reuse[_total_ports];
 
-	for (int i = 0; i < total_ports; ++i)
+	for (int i = 0; i < _total_ports; ++i)
 	{
-		_serverSockets.push_back(makeSocket(ports[i]))
-		if (setsockopt(_serverSockets[i], SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) < 0)
+		_serverSockets.push_back(makeSocket(ports[i], addr));
+		reuse[i] = 1;
+		if (setsockopt(_serverSockets[i], SOL_SOCKET, SO_REUSEADDR, &reuse[i], sizeof(reuse[i])) < 0)
 		{
 			perror("error: setsockopt");
 		}
@@ -54,10 +54,12 @@ void	Servers::createServerSocket()
 		{
 			perror("error: listen");
 		}
+		FD_ZERO(&_current_sockets);
+		FD_SET(_serverSockets[i], &_current_sockets);
 	}
 }
 
-void	Servers::makeSocket(int port)
+int	Servers::makeSocket(int port, sockaddr_in addr)
 {
 	int	serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (serverSocket == -1)
@@ -68,8 +70,7 @@ void	Servers::makeSocket(int port)
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	addr.sin_port = htons(port);
-	int	reuse = 1;
-
+	return (serverSocket);
 }
 
 void Servers::pingServer()
@@ -80,21 +81,24 @@ void Servers::pingServer()
 	{
 		perror("error: select");
 	}
-	for (int i = 0; i < FD_SETSIZE; i++)
+	for (int j = 0; j < _total_ports; j++)
 	{
-		if (FD_ISSET(i, &_ready_sockets))
+		for (int i = 0; i < FD_SETSIZE; i++)
 		{
-			//new connection
-			if (i == _serverSocket)
+			if (FD_ISSET(i, &_ready_sockets))
 			{
-				int	connectionSocket = acceptConnection();
-				FD_SET(connectionSocket, &_current_sockets);
-			}
-			//handle the connection
-			else
-			{
-				receiveRequest(i);
-				FD_CLR(i, &_current_sockets);
+				//new connection
+				if (i == _serverSockets[j])
+				{
+					int	connectionSocket = acceptConnection();
+					FD_SET(connectionSocket, &_current_sockets);
+				}
+				//handle the connection
+				else
+				{
+					receiveRequest(i);
+					FD_CLR(i, &_current_sockets);
+				}
 			}
 		}
 	}
@@ -119,6 +123,7 @@ int		Servers::acceptConnection()
 		}
 	}
 	perror("error: accept");
+	return (-1);
 }
 
 void	Servers::receiveRequest(int connectionSocket)

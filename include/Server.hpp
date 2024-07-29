@@ -19,10 +19,10 @@
 #include <arpa/inet.h>
 #include <strings.h>
 #include <fcntl.h>
+#include <vector>
 
 #include "Request.hpp"
 
-#define MAX_PORTS	5
 #define BUFSIZE     4096
 
 class   Config;
@@ -42,7 +42,7 @@ class   Servers
 		~Servers();
 	
 		void        createServerSocket();
-		void		makeSocket(int port);
+		int			makeSocket(int port, sockaddr_in addr);
 		void        pingServer();
 		int         acceptConnection();
 		void        receiveRequest(int connectionSocket);

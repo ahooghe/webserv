@@ -33,9 +33,8 @@ void WebServer::start()
 	//Request request(this->config, temp);
 	//request.execute();
 	//std::cout << request.getResponse() << std::endl;
-	in_port_t   port = 8000;
-	Servers  server_a(port, config);
+	Servers  server(config);
 
-	server_a.pingServer();
+	server.pingServer();
 
 }
