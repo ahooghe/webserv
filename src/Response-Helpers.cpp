@@ -43,7 +43,11 @@ std::string Response::_createPath()
 	{
 		std::string oldUri = uriPath;
 		if (server.getLocation(uriPath).getRealLocation() == 0)
-			uriPath = uriPath.substr(0, uriPath.find("/") + 1);
+		{
+			size_t slashPos = uriPath.find("/");
+			if (slashPos != std::string::npos)
+				uriPath = uriPath.substr(0, slashPos + 1);
+		}
 		else
 		{
 			location = server.getLocation(uriPath);
@@ -56,7 +60,14 @@ std::string Response::_createPath()
 	if (location.getAlias().empty())
 		requestedFile = server.getRoot() + this->_request.getUri();
 	else
-		requestedFile = server.getRoot() + location.getAlias() + this->_request.getUri().substr(this->_request.getUri().find_last_of("/"));
+	{
+		std::string uri = this->_request.getUri();
+		std::size_t lastSlash = uri.find_last_of("/");
+		if (lastSlash != std::string::npos)
+		{
+			requestedFile = server.getRoot() + location.getAlias() + uri.substr(lastSlash);
+		}
+	}
 	return (requestedFile);
 }
 
@@ -118,7 +129,7 @@ int Response::_handlePush(std::istringstream& body, std::string boundary)
 					filename = filename.substr(1, filename.size() - 2);
 			}
 		}
-		else if (line.find("Content-Type:") != std::string::npos)
+		else if (line.find("Content-Type: ") != std::string::npos)
 		{
 			type = line.substr(line.find("Content-Type: ") + 14);
 		}

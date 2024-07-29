@@ -15,7 +15,11 @@ CGI::CGI(Request request)
 
 int CGI::execute()
 {
-    std::string fileSuffix = this->_request.getUri().substr(this->_request.getUri().find_last_of("."));
+    std::string uri = this->_request.getUri();
+    size_t dotIndex = uri.find_last_of(".");
+    if (dotIndex == std::string::npos)
+        return 500;
+    std::string fileSuffix = uri.substr(dotIndex);
     int portServer = this->_request.getConfig().getPortHost(this->_request.getHeaders()["Host"]);
     if (portServer == 0)
         return 400;

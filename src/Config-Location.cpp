@@ -49,8 +49,10 @@ void Location::initLocation(std::string locationBlock)
 		else if (line.find("auto_index ") != std::string::npos)
 		{
 			line = line.substr(line.find("auto_index ") + 11);
-			line = line.substr(line.find_first_not_of(" \t"));
-			line = line.substr(0, line.find_last_not_of(" \t") + 1);
+			if (line.find_first_not_of(" \t") != std::string::npos)
+				line = line.substr(line.find_first_not_of(" \t"));
+			if (line.find_last_not_of(" \t") != std::string::npos)
+				line = line.substr(0, line.find_last_not_of(" \t") + 1);
 			if (line == "on")
 				_autoindex = true;
 			else if (line == "off")
@@ -61,8 +63,10 @@ void Location::initLocation(std::string locationBlock)
 		else if (line.find("index ") != std::string::npos)
 		{
 			line = line.substr(line.find("index ") + 6);
-			line = line.substr(line.find_first_not_of(" \t"));
-			line = line.substr(0, line.find_last_not_of(" \t") + 1);
+			if (line.find_first_not_of(" \t") != std::string::npos)
+				line = line.substr(line.find_first_not_of(" \t"));
+			if (line.find_last_not_of(" \t") != std::string::npos)
+				line = line.substr(0, line.find_last_not_of(" \t") + 1);
 			if (line.find(" ") != std::string::npos || line.find("\t") != std::string::npos)
 				throw MultipleDefinitionLocException();
 			_index = line;
@@ -70,8 +74,10 @@ void Location::initLocation(std::string locationBlock)
 		else if (line.find("alias ") != std::string::npos)
 		{
 			line = line.substr(line.find("alias ") + 6);
-			line = line.substr(line.find_first_not_of(" \t"));
-			line = line.substr(0, line.find_last_not_of(" \t") + 1);
+			if (line.find_first_not_of(" \t") != std::string::npos)
+				line = line.substr(line.find_first_not_of(" \t"));
+			if (line.find_last_not_of(" \t") != std::string::npos)
+				line = line.substr(0, line.find_last_not_of(" \t") + 1);
 			if (line.find(" ") != std::string::npos || line.find("\t") != std::string::npos)
 				throw MultipleDefinitionLocException();
 			_alias = line;

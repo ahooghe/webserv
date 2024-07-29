@@ -44,7 +44,10 @@ Location Response::_getLocation()
 	{
 		std::string oldUri = uriPath;
 		if (server.getLocation(uriPath).getRealLocation() == 0)
-			uriPath = uriPath.substr(0, uriPath.find("/") + 1);
+		{
+			if (uriPath.find("/") != std::string::npos)
+				uriPath = uriPath.substr(0, uriPath.find("/") + 1);
+		}
 		else
 		{
 			location = server.getLocation(uriPath);

@@ -29,40 +29,49 @@ void Config::initConfig(const char *path)
 		if (poundPos != std::string::npos)
 			line = line.substr(0, (poundPos));
 
-		line = line.substr(line.find_first_not_of(" \t"));
-		line = line.substr(0, line.find_last_not_of(" \t") + 1);
+		if (line.find_first_not_of(" \t") != std::string::npos)
+			line = line.substr(line.find_first_not_of(" \t"));
+		if (line.find_last_not_of(" \t") != std::string::npos)
+			line = line.substr(0, line.find_last_not_of(" \t") + 1);
 
-		if (line.find("client_max_body_size") != std::string::npos)
+		if (line.find("client_max_body_size ") != std::string::npos)
 		{
 			size_t semiColonPos = line.find(';');
 			if (semiColonPos != std::string::npos)
 				line = line.substr(0, semiColonPos);
 			
 			std::string value = line.substr(line.find("client_max_body_size") + 20);
-			value = value.substr(value.find_first_not_of(" \t"));
-			value = value.substr(0, value.find_last_not_of(" \t") + 1);
+			if (value.find_first_not_of(" \t") != std::string::npos)
+			{
+				value = value.substr(value.find_first_not_of(" \t"));
+				if (value.find_last_not_of(" \t") != std::string::npos)
+				{
+					value = value.substr(0, value.find_last_not_of(" \t") + 1);
+				}
+			}
 
 			std::istringstream iss(value);
 			char extra;
 			if (!(iss >> _clientMaxBodySize) || _clientMaxBodySize < 0 || iss >> extra)
 				throw ClientMaxBodySizeException();
 		}
-		else if (line.find("error_page") != std::string::npos)
+		else if (line.find("error_page ") != std::string::npos)
 		{
 			size_t semiColonPos = line.find(';');
 			if (semiColonPos != std::string::npos)
 				line = line.substr(0, semiColonPos);
 			std::string errorPage = line.substr(line.find("error_page") + 10);
-			errorPage = errorPage.substr(errorPage.find_first_not_of(" \t"));
-			std::string errorCode = errorPage.substr(0, errorPage.find_first_of(" \t"));
-			errorPage = errorPage.substr(errorPage.find_first_of(" \t"));
-			errorPage = errorPage.substr(errorPage.find_first_not_of(" \t"));
-			std::string errorPath = errorPage.substr(0, errorPage.find_first_of(" \t"));
+			std::istringstream iss(errorPage);
+			std::string errorCode;
+			std::string errorPath;
+			if (!(iss >> errorCode >> errorPath)) {
+				throw FormatException();
+			}
 
-			std::istringstream iss(errorCode);
+			std::istringstream iss2(errorCode);
 			char extra;
 			int code;
-			if (!(iss >> code) || code < 0 || iss >> extra)
+			if (!(iss2 >> code) || code < 0 || iss2 >> extra)
 				throw ErrorCodeException();
 
 			if (_errorPages.find(code) == _errorPages.end())
@@ -73,8 +82,10 @@ void Config::initConfig(const char *path)
 		else if (line.find("server ") != std::string::npos)
 		{
 			line = line.substr(line.find("server") + 6);
-			line = line.substr(line.find_first_not_of(" \t"));
-			line = line.substr(0, line.find_last_not_of(" \t") + 1);
+			if (line.find_first_not_of(" \t") != std::string::npos)
+				line = line.substr(line.find_first_not_of(" \t"));
+			if (line.find_last_not_of(" \t") + 1 != std::string::npos)
+				line = line.substr(0, line.find_last_not_of(" \t") + 1);
 			std::istringstream ss(line);
 			char extra;
 			int port;
@@ -89,11 +100,15 @@ void Config::initConfig(const char *path)
 				if (line.empty())
 					continue;
 				
-				if (line.find("server_name") != std::string::npos)
+				if (line.find("server_name ") != std::string::npos)
 				{
 					std::string host = line.substr(line.find("server_name") + 12);
-					host = host.substr(host.find_first_not_of(" \t"));
-					host = host.substr(0, host.find_last_not_of(" \t"));
+					size_t start = host.find_first_not_of(" \t");
+					if (start != std::string::npos)
+						host = host.substr(start);
+					size_t end = host.find_last_not_of(" \t");
+					if (end != std::string::npos)
+						host = host.substr(0, end + 1);
 					this->_portHost[host] = port;
 				}
 
@@ -103,8 +118,10 @@ void Config::initConfig(const char *path)
 				size_t semiColonPos = line.find(';');
 				if (semiColonPos != std::string::npos)
 					line = line.substr(0, semiColonPos);
-				line = line.substr(line.find_first_not_of(" \t"));
-				line = line.substr(0, line.find_last_not_of(" \t") + 1);
+				if (line.find_first_not_of(" \t") != std::string::npos)
+					line = line.substr(line.find_first_not_of(" \t"));
+				if (line.find_last_not_of(" \t") != std::string::npos)
+					line = line.substr(0, line.find_last_not_of(" \t") + 1);
 
 				if (line.find("{") != std::string::npos)
 					throw ClosingBracketException();
