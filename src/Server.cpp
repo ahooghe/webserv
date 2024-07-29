@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: brmajor <brmajor@student.42.fr>            +#+  +:+       +#+        */
+/*   By: ahooghe <ahooghe@student.s19.be>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/24 11:42:06 by brmajor           #+#    #+#             */
-/*   Updated: 2024/07/29 14:44:53 by brmajor          ###   ########.fr       */
+/*   Updated: 2024/07/29 20:28:08 by ahooghe          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,12 @@ void	Servers::createServerSocket()
 
 	for (int i = 0; i < _total_ports; ++i)
 	{
-		_serverSockets.push_back(makeSocket(ports[i], addr));
+		bzero(&addr, sizeof(addr));
+		addr.sin_family = AF_INET;
+		addr.sin_addr.s_addr = htonl(INADDR_ANY);
+		addr.sin_port = htons(ports[i]);
+	
+		_serverSockets.push_back(makeSocket());
 		reuse[i] = 1;
 		if (setsockopt(_serverSockets[i], SOL_SOCKET, SO_REUSEADDR, &reuse[i], sizeof(reuse[i])) < 0)
 		{
@@ -59,17 +64,13 @@ void	Servers::createServerSocket()
 	}
 }
 
-int	Servers::makeSocket(int port, sockaddr_in addr)
+int	Servers::makeSocket()
 {
 	int	serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (serverSocket == -1)
 	{
 		perror("error: socket");
 	}
-	bzero(&addr, sizeof(addr));
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	addr.sin_port = htons(port);
 	return (serverSocket);
 }
 

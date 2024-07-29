@@ -82,6 +82,7 @@ private:
 public:
 	Config();
 	~Config();
+	Config(const Config &src);
 
 	void						checkFormat(const char *path);
 	void						initConfig(const char *path);

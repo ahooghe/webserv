@@ -1,15 +1,29 @@
 #include "../include/Config.hpp"
+#include <iostream>
 
-Config::Config()
+Config::Config(): _clientMaxBodySize(1000000), _ports(NULL)
 {
-	_clientMaxBodySize = 1000000;
 }
 
 Config::~Config()
 {
-	if (this->_totalports)
 		delete[] this->_ports;
+}
 
+Config::Config(const Config &src)
+{
+	if (src.getPorts())
+	{
+		this->_ports = new int[src.getTotalports()];
+		for (int i = 0; i < src.getTotalports(); i++)
+			this->_ports[i] = src.getPorts()[i];
+		this->_totalports = src.getTotalports();
+	}
+	this->_clientMaxBodySize = src.getClientMaxBodySize();
+	this->_default = src.getDefault();
+	this->_errorPages = src.getErrorPages();
+	this->_portHost = src.getPortHosts();
+	this->_server = src.getServers();
 }
 
 void Config::initConfig(const char *path)
@@ -28,6 +42,8 @@ void Config::initConfig(const char *path)
 		size_t poundPos = line.find('#');
 		if (poundPos != std::string::npos)
 			line = line.substr(0, (poundPos));
+		if (line.find(";") != std::string::npos)
+			line = line.substr(0, line.find(";"));
 
 		if (line.find_first_not_of(" \t") != std::string::npos)
 			line = line.substr(line.find_first_not_of(" \t"));
@@ -102,6 +118,14 @@ void Config::initConfig(const char *path)
 				
 				if (line.find("server_name ") != std::string::npos)
 				{
+					size_t poundPos = line.find('#');
+					if (poundPos != std::string::npos)
+						line = line.substr(0, (poundPos));
+					size_t semiColonPos = line.find(';');
+					if (semiColonPos != std::string::npos)
+						line = line.substr(0, semiColonPos);
+					if (line.find("server_name") == std::string::npos)
+						throw FormatException();
 					std::string host = line.substr(line.find("server_name") + 12);
 					size_t start = host.find_first_not_of(" \t");
 					if (start != std::string::npos)
@@ -169,13 +193,24 @@ void Config::initConfig(const char *path)
 
 Config &Config::operator=(const Config &src)
 {
-	this->_server = src.getServers();
-	this->_clientMaxBodySize = src.getClientMaxBodySize();
-	this->_default = src.getDefault();
-	this->_errorPages = src.getErrorPages();
-	this->_portHost = src.getPortHosts();
-	this->_totalports = src.getTotalports();
-	this->_ports = src.getPorts();
+	if (this != &src)
+	{
+		if (this->_ports != NULL)
+		{
+			delete[] this->_ports;
+			this->_ports = NULL;
+		}
+
+		this->_server = src.getServers();
+		this->_clientMaxBodySize = src.getClientMaxBodySize();
+		this->_default = src.getDefault();
+		this->_errorPages = src.getErrorPages();
+		this->_portHost = src.getPortHosts();
+		this->_totalports = src.getTotalports();
+		this->_ports = new int[src.getTotalports()];
+		for (int i = 0; i < src.getTotalports(); i++)
+			this->_ports[i] = src.getPorts()[i];
+	}
 	return (*this);
 }
 

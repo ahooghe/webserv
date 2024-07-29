@@ -42,7 +42,7 @@ class   Servers
 		~Servers();
 	
 		void        createServerSocket();
-		int			makeSocket(int port, sockaddr_in addr);
+		int			makeSocket();
 		void        pingServer();
 		int         acceptConnection();
 		void        receiveRequest(int connectionSocket);

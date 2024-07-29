@@ -1,8 +1,10 @@
 #include "../include/Request.hpp"
 #include "../include/Response.hpp"
+#include <iostream>
 
 Request::Request()
 {
+	this->_status = 0;
 }
 
 Request::~Request()
@@ -74,26 +76,9 @@ void Request::_processRequest()
 		std::istringstream iss(this->_request);
 		if (std::getline(iss, line))
 		{
-			size_t firstSpace = line.find(' ');
-			if (firstSpace != std::string::npos)
-			{
-				this->_method = line.substr(0, firstSpace);
-				size_t secondSpace = line.find(' ', firstSpace + 1);
-				if (secondSpace != std::string::npos)
-				{
-					this->_uri = line.substr(firstSpace + 1, secondSpace - firstSpace - 1);
-					size_t crPos = line.find("\r", secondSpace + 1);
-					if (crPos != std::string::npos)
-					{
-						this->_httpVersion = line.substr(secondSpace + 1, crPos - secondSpace - 1);
-					}
-					else
-						throw std::exception();
-				}
-				else
-					throw std::exception();
-			}
-			else
+			std::istringstream firstline(line);
+			firstline >> _method >> _uri >> _httpVersion;
+			if (_method.empty() || _uri.empty() || _httpVersion.empty())
 				throw std::exception();
 		}
 		else
@@ -106,7 +91,8 @@ void Request::_processRequest()
 
 			size_t colonPos = line.find_first_of(":");
 			if (colonPos == std::string::npos || colonPos == 0 || colonPos == line.length() - 1)
-				throw std::exception();
+				continue;
+	
 
 			std::string headerName = line.substr(0, colonPos);
 			std::string headerValue = line.substr(colonPos + 1);
@@ -119,7 +105,9 @@ void Request::_processRequest()
 			size_t end = headerValue.find_last_not_of(" \t\r");
 			if (end != std::string::npos)
 				headerValue = headerValue.substr(0, end + 1);
-
+			
+			if (headerName == "Host" && headerValue.find_last_of(":") != std::string::npos && headerValue.find_last_of(":") > headerValue.length() - 6)
+				headerValue = headerValue.substr(0, headerValue.find_last_of(":"));
 			if (headerName.empty() || headerValue.empty())
 				throw std::exception();
 

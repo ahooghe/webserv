@@ -1,4 +1,5 @@
 #include "../include/Response.hpp"
+#include <iostream>
 
 int Response::_makeFile(const std::string &filename, const std::string &type, const std::string &content)
 {
@@ -42,7 +43,7 @@ std::string Response::_createPath()
 	while (!uriPath.empty())
 	{
 		std::string oldUri = uriPath;
-		if (server.getLocation(uriPath).getRealLocation() == 0)
+		if (server.getLocation(uriPath).getRealLocation() == false)
 		{
 			size_t slashPos = uriPath.find("/");
 			if (slashPos != std::string::npos)
@@ -54,19 +55,38 @@ std::string Response::_createPath()
 			break;
 		}
 	}
-	if (location.getRealLocation() == false)
-		return ("");
-	std::string requestedFile;
-	if (location.getAlias().empty())
-		requestedFile = server.getRoot() + this->_request.getUri();
+	std::string requestedFile = server.getRoot();
+	std::string uriWithoutLoc = this->_request.getUri().substr(uriPath.length());
+	if (!uriWithoutLoc.empty())
+	{
+		if (uriWithoutLoc.find(".") != std::string::npos)
+		{
+			if (location.getAlias().empty())
+				requestedFile += uriPath + uriWithoutLoc;
+			else
+				requestedFile += location.getAlias() + "/" + uriWithoutLoc;
+		}
+		else
+		{
+			if (!location.getAlias().empty())
+				uriPath = location.getAlias();
+			
+			if (location.getIndex().empty())
+				requestedFile += uriPath + server.getIndex();
+			else
+				requestedFile += uriPath + location.getIndex();
+		}
+	}
+	else if (location.getAutoindex() == true)
+	{
+		requestedFile += uriPath;
+	}
 	else
 	{
-		std::string uri = this->_request.getUri();
-		std::size_t lastSlash = uri.find_last_of("/");
-		if (lastSlash != std::string::npos)
-		{
-			requestedFile = server.getRoot() + location.getAlias() + uri.substr(lastSlash);
-		}
+		if (location.getIndex().empty())
+			requestedFile += uriPath + server.getIndex();
+		else
+			requestedFile += uriPath + location.getIndex();
 	}
 	return (requestedFile);
 }

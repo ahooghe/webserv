@@ -1,5 +1,6 @@
 #include "../include/Response.hpp"
 #include <iomanip>
+#include <iostream>
 
 Response::Response()
 {
@@ -44,9 +45,10 @@ int Response::_getRequest()
 	Location location = _getLocation();
 	std::string path = _createPath();
 	int filetype = _isFile(path);
-	std::string filesuffix = this->_request.getUri().substr(this->_request.getUri().find_last_of("."));
-	if (filesuffix[0] != '.')
-		return 400;
+	std::string filesuffix = "";
+	
+	if (path.find(".") != std::string::npos)
+		filesuffix = path.substr(path.find("."));
 	if (filesuffix != ".html")
 	{
 		CGI cgi(this->_request);
@@ -54,9 +56,7 @@ int Response::_getRequest()
 		this->_response = cgi.getResponse();
 		return status;
 	}
-	if (location.getRealLocation() == false || path.empty())
-		return 400;
-	if (location.getAutoindex() == true && filetype == 1)
+	if (filesuffix.empty())
 		return (_getRequestIndex());
 	if (filetype != 0)
 		return filetype;
