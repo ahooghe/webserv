@@ -42,12 +42,13 @@ std::string Response::_createPath()
 	std::string uriPath = this->_request.getUri();
 	while (!uriPath.empty())
 	{
-		std::string oldUri = uriPath;
 		if (server.getLocation(uriPath).getRealLocation() == false)
 		{
-			size_t slashPos = uriPath.find("/");
+			size_t slashPos = uriPath.find_last_of("/");
+			if (slashPos == 0)
+				break;
 			if (slashPos != std::string::npos)
-				uriPath = uriPath.substr(0, slashPos + 1);
+				uriPath = uriPath.substr(0, slashPos);
 		}
 		else
 		{
@@ -83,8 +84,10 @@ std::string Response::_createPath()
 	}
 	else
 	{
+		std::cout << uriPath << std::endl;
 		if (!location.getAlias().empty())
 			uriPath = location.getAlias();
+		std::cout << uriPath << std::endl;
 		if (location.getIndex().empty())
 			requestedFile += uriPath + "/" + server.getIndex();
 		else

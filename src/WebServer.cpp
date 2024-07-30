@@ -33,8 +33,16 @@ void WebServer::start()
 	//Request request(this->config, temp);
 	//request.execute();
 	//std::cout << request.getResponse() << std::endl;
-	Servers  server(config);
-	while (1)
-		server.pingServer();
+	try 
+	{
+		Servers  server(config);
+		while (1)
+			server.pingServer();
+	}
+	catch (std::exception &e)
+	{
+		std::cerr << e.what() << std::endl;
+		exit(1);
+	}
 
 }

@@ -9,7 +9,7 @@ Location::Location()
 	_realLocation = true;
 	_httpcounter = 0;
 	_get = true;
-	_push = true;
+	_post = true;
 	_delete = true;
 }
 
@@ -91,16 +91,16 @@ void Location::initLocation(std::string locationBlock)
 			line = line.substr(13);
 			std::istringstream iss(line);
 			std::string var1, var2, var3;
+			iss >> var1 >> var2 >> var3;
 			this->_get = false;
-			std::cout << var1 << var2 << var3 << std::endl;
 			if (var1 == "GET" || var2 == "GET" || var3 == "GET")
 				this->_get = true;
 			this->_delete = false;
 			if (var1 == "DELETE" || var2 == "DELETE" || var3 == "DELETE")
 				this->_delete = true;
-			this->_push = false;
-			if (var1 == "PUSH" || var2 == "PUSH" || var3 == "PUSH")
-				this->_push = true;
+			this->_post = false;
+			if (var1 == "POST" || var2 == "POST" || var3 == "POST")
+				this->_post = true;
 		}
 		else
 			throw FormatException();
@@ -118,6 +118,6 @@ Location &Location::operator=(const Location &src)
 	this->_alias = src.getAlias();
 	this->_get = src.getGet();
 	this->_delete = src.getDelete();
-	this->_push = src.getPush();
+	this->_post = src.getPost();
 	return (*this);
 }

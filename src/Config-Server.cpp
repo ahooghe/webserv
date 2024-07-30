@@ -27,6 +27,8 @@ void Server::initServer(std::string serverBlock)
 				locID = locID.substr(locID.find_first_not_of(" \t"));
 			if (locID.find_first_of(" \t") != std::string::npos)
 				locID = locID.substr(0, locID.find_first_of(" \t"));
+			if (locID.length() > 1 && locID[locID.length() - 1] == '/')
+				locID = locID.substr(0, locID.length() - 1);
 			if (std::getline(server, line) && line == "{")
 				throw OpeningBracketException();
 			while (std::getline(server, line))

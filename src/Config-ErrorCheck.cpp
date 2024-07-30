@@ -19,6 +19,8 @@ void Config::errCheck()
 		_errorPages[404] = "default_files/err_pages/404.html";
 	if (_errorPages.find(405) == _errorPages.end())
 		_errorPages[405] = "default_files/err_pages/405.html";
+	if (_errorPages.find(413) == _errorPages.end())
+		_errorPages[413] = "default_files/err_pages/413.html";
 	if (_errorPages.find(500) == _errorPages.end())
 		_errorPages[500] = "default_files/err_pages/500.html";
 	if (_errorPages.find(501) == _errorPages.end())

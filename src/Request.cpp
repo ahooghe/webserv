@@ -21,15 +21,24 @@ Request::Request(Config config, std::string request)
 void Request::execute()
 {
 	_processRequest();
-
-	_errorCheck();
+	try
+	{
+		_errorCheck();
+	}
+	catch(const std::exception& e)
+	{
+		this->_status = 400;
+	}
+	
 }
 
 std::string Request::getResponse()
 {
-	std::string response = this->_httpVersion;
+	std::string response = "HTTP/1.1";
 	if (this->_status == 400)
-		response += this->_status + "400 Bad Request\r\n\r\n" + makeErrorFile(this->_status);
+		response += " 400 Bad Request\r\n\r\n" + makeErrorFile(this->_status);
+	else if (this->_status == 405)
+		response += " 405 Method Not Allowed\r\n\r\n" + makeErrorFile(this->_status);
 	if (this->_status == 0)
 	{
 		Response resp(*this);
@@ -58,6 +67,9 @@ std::string Request::getResponse()
 			case 405:
 				response += " 405 Method Not Allowed\r\n\r\n" + makeErrorFile(this->_status);
 				break;
+			case 413:
+				response += " 413 Payload Too Large\r\n\r\n" + makeErrorFile(this->_status);
+				break;
 			case 500:
 				response += " 500 Internal Server Error\r\n\r\n" + makeErrorFile(this->_status);
 				break;
@@ -66,6 +78,7 @@ std::string Request::getResponse()
 				break;
 		}
 	}
+	std::cout << response << std::endl;
 	return (response);
 }
 
@@ -84,7 +97,6 @@ void Request::_processRequest()
 		}
 		else
 			throw std::exception();
-
 		while (std::getline(iss, line))
 		{
 			if (line.empty()) // Correctly checks for the end of the header section
@@ -133,7 +145,7 @@ void Request::_processRequest()
 void Request::_errorCheck()
 {
 	if (this->_method != "GET" && this->_method != "POST" && this->_method != "DELETE")
-		throw std::exception();
+		this->_status = 405;
 	if (this->_httpVersion != "HTTP/1.1")
 		throw std::exception();
 	if (this->_uri.find("/") == std::string::npos)

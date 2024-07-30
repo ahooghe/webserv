@@ -25,7 +25,7 @@ int Response::handleRequest()
 	{
 		return _deleteRequest();
 	}
-	else if (this->_request.getMethod() == "PUSH")
+	else if (this->_request.getMethod() == "POST")
 	{
 		return _pushRequest();
 	}
@@ -48,15 +48,17 @@ int Response::_getRequest()
 	if (location.getGet() == false)
 		return 405;
 	std::string filesuffix = "";
-	if (path.find(".") != std::string::npos)
-		filesuffix = path.substr(path.find("."));
-	if (!filesuffix.empty() && filesuffix != ".html")
+	if (path.find_last_of(".") != std::string::npos && path.find_last_of(".") > path.find_last_of("/"))
+		filesuffix = path.substr(path.find_last_of("."));
+	Server server = this->_request.getConfig().getServer(this->_request.getConfig().getPortHost(this->_request.getHeaders()["Host"]));
+	if (!filesuffix.empty() && !server.getCgiPath(filesuffix).empty())
 	{
 		CGI cgi(this->_request);
 		int status = cgi.execute();
 		this->_response = cgi.getResponse();
 		return status;
 	}
+	std::cout << path << std::endl;
 	if (filesuffix.empty())
 		return (_getRequestIndex());
 	if (filetype != 0)
@@ -64,11 +66,9 @@ int Response::_getRequest()
 	file.open(path.c_str());
 	if (file.is_open())
 		ret << file.rdbuf();
-	else
+	else 
 		return 404;
 	file.close();
-	if (ret.str().empty())
-		return 404;
 	this->_response = ret.str();
 	return 200;
 }
@@ -104,7 +104,7 @@ int Response::_deleteRequest()
 int Response::_pushRequest()
 {
 	Location location = _getLocation();
-	if (location.getPush() == false)
+	if (location.getPost() == false)
 		return 405;
 	std::map<std::string, std::string> headers = this->_request.getHeaders();
 	if (headers.find("Content-Type") == headers.end() || headers["Content-Type"].find("multipart/form-data") == std::string::npos)
@@ -118,6 +118,9 @@ int Response::_pushRequest()
 	std::string boundary = "--" + contentType.substr(boundaryPos + 9);
 	if (this->_request.getBody().empty())
 		return 400;
+	
+	if ((int)this->_request.getBody().size() > this->_request.getConfig().getClientMaxBodySize())
+		return 413;
 	std::istringstream body(this->_request.getBody());
 
 	int statusPush = _handlePush(body, boundary);

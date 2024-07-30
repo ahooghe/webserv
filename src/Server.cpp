@@ -6,7 +6,7 @@
 /*   By: ahooghe <ahooghe@student.s19.be>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/24 11:42:06 by brmajor           #+#    #+#             */
-/*   Updated: 2024/07/29 23:23:41 by ahooghe          ###   ########.fr       */
+/*   Updated: 2024/07/30 02:18:51 by ahooghe          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 #include "../include/Response.hpp"
 #include "../include/Request.hpp"
 #include "../include/Config.hpp"
+
+#include <netinet/tcp.h>
 
 Servers::Servers(Config config)
 {
@@ -134,26 +136,36 @@ void	Servers::receiveRequest(int connectionSocket)
 
 	bzero(buffer, BUFSIZE);
 	setNonBlocking(connectionSocket);
-	while ((bytesRead = recv(connectionSocket, buffer, sizeof(buffer) - 1, 0)) > 0)
+	std::string request_string;
+	while (true)
 	{
+		bytesRead = recv(connectionSocket, buffer, sizeof(buffer) - 1, 0);
 		buffer[bytesRead] = '\0';
-		if (bytesRead == -1)
-		{
-			perror("read error");
+		if (bytesRead > 0) {
+			request_string.append(buffer, bytesRead);
 		}
+		if (request_string.find("\r\n\r\n") != std::string::npos)
+			break;
 		else if (bytesRead == 0)
-		{
-			perror("nothing to read");
-		}
+			break;
 	}
-	std::string request_string(buffer);
-	Request request(this->_config, request_string);
-    std::cerr << "Request received, it was:\n" << buffer << std::endl;
-	request.execute();
-	std::string response = request.getResponse();
+	if (!request_string.empty())
+	{
+		Request request(this->_config, request_string);
+    	std::cerr << "Request received, it was:\n" << buffer << std::endl;
+		request.execute();
+		std::cout << "meow" << std::endl;
+		std::string response = request.getResponse();
+		send(connectionSocket, response.c_str(), response.size(), 0);
 
-	send(connectionSocket, response.c_str(), response.size(), 0);
-	close(connectionSocket);
+		if (shutdown(connectionSocket, SHUT_WR) < 0) {
+        	perror("shutdown error");
+    	}
+		if (response.find("keep-alive") != std::string::npos)
+			close(connectionSocket);
+	}
+	else
+		close(connectionSocket);
 }
 
 void    Servers::setNonBlocking(int sockfd)

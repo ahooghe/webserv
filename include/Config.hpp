@@ -21,7 +21,7 @@ private:
 	bool		_realLocation;
 	bool		_get;
 	bool		_delete;
-	bool		_push;
+	bool		_post;
 	std::string	_index;
 	std::string	_alias;
 	int			_httpcounter;
@@ -39,7 +39,7 @@ public:
 	bool		getRealLocation() const;
 	bool		getGet() const;
 	bool		getDelete() const;
-	bool		getPush() const;
+	bool		getPost() const;
 	std::string	getIndex() const;
 	std::string	getAlias() const;
 

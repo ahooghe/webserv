@@ -1,4 +1,5 @@
 #include "../include/CGI.hpp"
+#include <iostream>
 
 CGI::CGI()
 {
@@ -42,7 +43,6 @@ int CGI::execute()
         return 500;
     
     pid_t pid = fork();
-
     if (pid == -1)
     {
         close(pipefd[0]);
@@ -60,22 +60,24 @@ int CGI::execute()
         }
         close(pipefd[1]);
 
-        char *const execArgs[] = {NULL};
+        char *const execArgs[] = {const_cast<char*>(cgiPath.c_str()), NULL};
         execve(cgiPath.c_str(), execArgs, env);
         _exit(500);
     }
     else
     {
+        std::cout << "Im here1" <<  std::endl;
         close(pipefd[1]);
         int status;
         waitpid(pid, &status, 0);
+        std::cout << "Im here2" <<  std::endl;
 
         if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
         {
             close(pipefd[0]);
             return 500;
         }
-
+        std::cout << "Im here3" <<  std::endl;
         char buff[CGI_BUFF];
         ssize_t readBytes;
         while ((readBytes = read(pipefd[0], buff, CGI_BUFF - 1)) > 0)
@@ -85,7 +87,6 @@ int CGI::execute()
         }
         close(pipefd[0]);
     }
-
     if (close(pipefd[0]) == -1 || close(pipefd[1]) == -1)
         return 500;
     

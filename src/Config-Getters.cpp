@@ -136,9 +136,9 @@ bool Location::getDelete() const
 	return _delete;
 }
 
-bool Location::getPush() const
+bool Location::getPost() const
 {
-	return _push;
+	return _post;
 }
 
 std::string Location::getIndex() const
