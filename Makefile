@@ -1,4 +1,4 @@
-NAME = webserver
+NAME = webserv
 CC = g++
 CFLAGS = -Wall -Wextra -Werror -std=c++98 -g
 SRCS = \
@@ -39,4 +39,6 @@ clean:
 
 fclean: clean
 		rm -f $(NAME)
+
+re: fclean $(NAME)
 
