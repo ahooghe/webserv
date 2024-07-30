@@ -58,7 +58,6 @@ int Response::_getRequest()
 		this->_response = cgi.getResponse();
 		return status;
 	}
-	std::cout << path << std::endl;
 	if (filesuffix.empty())
 		return (_getRequestIndex());
 	if (filetype != 0)

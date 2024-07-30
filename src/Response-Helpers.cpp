@@ -84,10 +84,8 @@ std::string Response::_createPath()
 	}
 	else
 	{
-		std::cout << uriPath << std::endl;
 		if (!location.getAlias().empty())
 			uriPath = location.getAlias();
-		std::cout << uriPath << std::endl;
 		if (location.getIndex().empty())
 			requestedFile += uriPath + "/" + server.getIndex();
 		else
@@ -126,6 +124,7 @@ int Response::_isFile(std::string path)
 	file.open(path.c_str());
 	if (!file.is_open())
 		return 403;
+	file.close();
 	return 0;
 }
 

@@ -97,5 +97,6 @@ void Config::_checkErrorPages()
 		file.open(path.c_str());
 		if (!file.is_open())
 			throw ErrorFileException();
+		file.close();
 	}
 }

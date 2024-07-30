@@ -33,7 +33,6 @@ int CGI::execute()
     char cwd[100];
     if (getcwd(cwd, sizeof(cwd)) == NULL)
         return 500;
-
     char **env = _buildEnv(filePath);
     if (env == NULL)
         return 500;
@@ -51,33 +50,38 @@ int CGI::execute()
     }
     else if (pid == 0)
     {
-        // Child process
+        write(2, "1", 1);
         close(pipefd[0]);
+        write(2, "2", 1);
+
         if (dup2(pipefd[1], STDOUT_FILENO) == -1)
         {
+            write(2, "3", 1);
             close(pipefd[1]);
+            write(2, "4", 1);
             _exit(500);
         }
         close(pipefd[1]);
-
-        char *const execArgs[] = {const_cast<char*>(cgiPath.c_str()), NULL};
-        execve(cgiPath.c_str(), execArgs, env);
+        char absPath[PATH_MAX];
+        if (realpath(cgiPath.c_str(), absPath) == NULL)
+            _exit(500);
+        //char *const execArgs[] = {const_cast<char*>(cgiPath.c_str()), NULL};
+        //execve(cgiPath.c_str(), execArgs, env);
+        char *const straceArgs[] = {const_cast<char*>("/usr/bin/strace"), const_cast<char*>("-f"), const_cast<char*>("-o"), const_cast<char*>("strace_output.txt"), absPath, NULL};
+        execve("/usr/bin/strace", straceArgs, env);
         _exit(500);
     }
     else
     {
-        std::cout << "Im here1" <<  std::endl;
         close(pipefd[1]);
         int status;
         waitpid(pid, &status, 0);
-        std::cout << "Im here2" <<  std::endl;
 
         if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
         {
             close(pipefd[0]);
             return 500;
         }
-        std::cout << "Im here3" <<  std::endl;
         char buff[CGI_BUFF];
         ssize_t readBytes;
         while ((readBytes = read(pipefd[0], buff, CGI_BUFF - 1)) > 0)
