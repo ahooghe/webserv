@@ -1,5 +1,4 @@
 #include "../include/Config.hpp"
-#include <iostream>
 
 /************/
 /*  CONFIG  */

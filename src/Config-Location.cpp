@@ -1,5 +1,4 @@
 #include "../include/Config.hpp"
-#include <iostream>
 
 Location::Location()
 {
@@ -107,17 +106,4 @@ void Location::initLocation(std::string locationBlock)
 	}
 	if (this->_httpcounter > 1)
 		throw FormatException();
-}
-Location &Location::operator=(const Location &src)
-{
-	this->_http = src.getHttp();
-	this->_https = src.getHttps();
-	this->_autoindex = src.getAutoindex();
-	this->_realLocation = src.getRealLocation();
-	this->_index = src.getIndex();
-	this->_alias = src.getAlias();
-	this->_get = src.getGet();
-	this->_delete = src.getDelete();
-	this->_post = src.getPost();
-	return (*this);
 }

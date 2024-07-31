@@ -1,5 +1,4 @@
 #include "../include/Response.hpp"
-#include <iostream>
 
 int Response::_makeFile(const std::string &filename, const std::string &type, const std::string &content)
 {
@@ -145,7 +144,7 @@ int Response::_handlePush(std::istringstream& body, std::string boundary)
 		if (line == boundary)
 		{
 			if (inFile && !filename.empty() && !type.empty() && !content.empty())
-			{s->_httpVersion != "HTTP/1.1")
+			{
 				if (_makeFile(filename, type, content) == 0)
 					return 500;
 				filename.clear();

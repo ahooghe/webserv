@@ -1,5 +1,4 @@
 #include "../include/Config.hpp"
-#include <iostream>
 
 Server::Server()
 {
@@ -104,14 +103,4 @@ void Server::initServer(std::string serverBlock)
 	}
 	if (!atLeastOneLocation)
 		throw NoLocationException();
-}
-
-Server &Server::operator=(const Server &src)
-{
-	this->_serverName = src.getServerName();
-	this->_root = src.getRoot();
-	this->_index = src.getIndex();
-	this->_cgiPath = src.getCgiPaths();
-	this->_location = src.getLocations();
-	return (*this);
 }

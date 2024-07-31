@@ -1,5 +1,4 @@
 #include "../include/Response.hpp"
-#include <iostream>
 
 int Response::_getRequestIndex()
 {

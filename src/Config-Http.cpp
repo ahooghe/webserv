@@ -1,5 +1,4 @@
 #include "../include/Config.hpp"
-#include <iostream>
 
 Config::Config(): _clientMaxBodySize(1000000), _ports(NULL)
 {
@@ -190,28 +189,3 @@ void Config::initConfig(const char *path)
 	}
 	this->_totalports = i;
 }
-
-Config &Config::operator=(const Config &src)
-{
-	if (this != &src)
-	{
-		if (this->_ports != NULL)
-		{
-			delete[] this->_ports;
-			this->_ports = NULL;
-		}
-
-		this->_server = src.getServers();
-		this->_clientMaxBodySize = src.getClientMaxBodySize();
-		this->_default = src.getDefault();
-		this->_errorPages = src.getErrorPages();
-		this->_portHost = src.getPortHosts();
-		this->_totalports = src.getTotalports();
-		this->_ports = new int[src.getTotalports()];
-		for (int i = 0; i < src.getTotalports(); i++)
-			this->_ports[i] = src.getPorts()[i];
-	}
-	return (*this);
-}
-
-

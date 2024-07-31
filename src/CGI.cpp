@@ -1,5 +1,4 @@
 #include "../include/CGI.hpp"
-#include <iostream>
 
 CGI::CGI()
 {

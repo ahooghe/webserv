@@ -32,7 +32,6 @@ void Config::errCheck()
 	if (_errorPages.find(504) == _errorPages.end())
 		_errorPages[504] = "default_files/err_pages/504.html";
 }
-
 void Config::checkFormat(const char *path)
 {
 	std::ifstream file(path);
@@ -47,6 +46,8 @@ void Config::checkFormat(const char *path)
 			continue;
 		line = line.substr(line.find_first_not_of(" \t"));
 		line = line.substr(0, line.find_last_not_of(" \t") + 1);
+		if (line.find("#") != std::string::npos)
+			line = line.substr(0, line.find("#"));
 		if (line.empty())
 			continue;
 		size_t semiColonPos = line.find(';');

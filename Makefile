@@ -1,30 +1,33 @@
-NAME = webserv
+NAME = webserver
 CC = g++
 CFLAGS = -Wall -Wextra -Werror -std=c++98 -g
 SRCS = \
-    src/Response-Helpers.cpp \
-    src/WebServer.cpp \
-    src/main.cpp \
-    src/CGI.cpp \
-    src/CGI-helper.cpp \
-    src/Response.cpp \
     src/Request.cpp \
-    src/Server.cpp \
     src/Config-Http.cpp \
     src/Config-ErrorCheck.cpp \
-    src/Config-Server.cpp \
-    src/Config-Location.cpp \
-    src/Config-Getters.cpp \
+    src/WebServer.cpp \
+    src/CGI.cpp \
+    src/Request-Getters.cpp \
+    src/CGI-helper.cpp \
+    src/Response-Helpers.cpp \
     src/Response-Getters.cpp \
+    src/Request-Helpers.cpp \
+    src/Response.cpp \
+    src/Config-Location.cpp \
+    src/main.cpp \
+    src/Config-Operators.cpp \
+    src/Server.cpp \
+    src/Config-Server.cpp \
+    src/Config-Getters.cpp \
 
 HEADERS = \
-    include/CGI.hpp \
     include/Server.hpp \
-    include/Error.hpp \
     include/Request.hpp \
+    include/CGI.hpp \
+    include/WebServer.hpp \
+    include/Error.hpp \
     include/Config.hpp \
     include/Response.hpp \
-    include/WebServer.hpp \
 
 OBJS = $(SRCS:.cpp=.o)
 
@@ -39,6 +42,4 @@ clean:
 
 fclean: clean
 		rm -f $(NAME)
-
-re: fclean $(NAME)
 
