@@ -6,7 +6,7 @@
 /*   By: ahooghe <ahooghe@student.s19.be>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/24 11:42:06 by brmajor           #+#    #+#             */
-/*   Updated: 2024/07/30 02:18:51 by ahooghe          ###   ########.fr       */
+/*   Updated: 2024/07/30 16:28:29 by ahooghe          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,11 +121,10 @@ int		Servers::acceptConnection()
 			sockaddr_in* addr_in = (sockaddr_in *)&socketAddress;
 			char ip[INET_ADDRSTRLEN];
 			inet_ntop(AF_INET, &(addr_in->sin_addr), ip, INET_ADDRSTRLEN);
-			std::cout << "IPv4 Address: " << ip << ", Port: " << ntohs(addr_in->sin_port) << std::endl;
+			//std::cout << "IPv4 Address: " << ip << ", Port: " << ntohs(addr_in->sin_port) << std::endl;
 			return (connectionSocket);
 		}
 	}
-	perror("error: accept");
 	return (-1);
 }
 
@@ -152,17 +151,19 @@ void	Servers::receiveRequest(int connectionSocket)
 	if (!request_string.empty())
 	{
 		Request request(this->_config, request_string);
-    	std::cerr << "Request received, it was:\n" << buffer << std::endl;
+    	//std::cerr << "Request received, it was:\n" << request_string << std::endl;
 		request.execute();
-		std::cout << "meow" << std::endl;
 		std::string response = request.getResponse();
 		send(connectionSocket, response.c_str(), response.size(), 0);
 
-		if (shutdown(connectionSocket, SHUT_WR) < 0) {
+
+		if (response.find("keep-alive") != std::string::npos)
+		{
+			close(connectionSocket);
+		}
+		else if (shutdown(connectionSocket, SHUT_WR) < 0) {
         	perror("shutdown error");
     	}
-		if (response.find("keep-alive") != std::string::npos)
-			close(connectionSocket);
 	}
 	else
 		close(connectionSocket);

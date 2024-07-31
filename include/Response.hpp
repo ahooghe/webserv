@@ -19,6 +19,7 @@ class Response
 		int			_pushRequest();
 		std::string	_createPath();
 		Location	_getLocation();
+		Location	_getExtensionLocation();
 		int			_isFile(std::string path);
 		int			_getRequestIndex();
 		int			_makeFile(const std::string &filename, const std::string &type, const std::string &content);

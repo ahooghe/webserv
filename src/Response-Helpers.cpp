@@ -131,6 +131,7 @@ int Response::_isFile(std::string path)
 	file.open(path.c_str());
 	if (!file.is_open())
 		return 403;
+	file.close();
 	return 0;
 }
 

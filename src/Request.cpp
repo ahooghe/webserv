@@ -43,7 +43,6 @@ std::string Request::getResponse()
 	{
 		Response resp(*this);
 		this->_status = resp.handleRequest();
-		std::cout << this->_status << std::endl;
 		switch(this->_status)
 		{
 			case 200:
@@ -78,7 +77,6 @@ std::string Request::getResponse()
 				break;
 		}
 	}
-	std::cout << response << std::endl;
 	return (response);
 }
 
@@ -162,6 +160,7 @@ std::string Request::makeErrorFile(int code)
 		ret << file.rdbuf();
 	else
 		return (backup500file());
+	file.close();
 	return ret.str();
 }
 
