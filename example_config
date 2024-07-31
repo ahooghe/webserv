@@ -1,0 +1,26 @@
+client_max_body_size 1000000;
+error_page 404 default_files/err_pages/404.html;
+
+server 8000
+{
+    server_name localhost;
+    root .;
+    index index.html;
+    cgi_path .cgi /var/run/php/php7.4-fpm.sock;
+    
+    location /
+    {
+        auto_index on;
+        listen_https on;
+        limit_except GET;
+    }
+
+    location /forum
+    {
+        alias /forumfiles;
+        index index2.html;
+        listen_https on;
+    }
+
+
+}

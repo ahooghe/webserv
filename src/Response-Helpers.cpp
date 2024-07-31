@@ -71,11 +71,14 @@ std::string Response::_createPath()
 		{
 			if (!location.getAlias().empty())
 				uriPath = location.getAlias();
-			
-			if (location.getIndex().empty())
-				requestedFile += uriPath + uriWithoutLoc + "/" + server.getIndex();
-			else
-				requestedFile += uriPath + uriWithoutLoc + "/" + location.getIndex();
+			int isExt = -1;
+			requestedFile += uriPath + uriWithoutLoc;
+			if (requestedFile.find_last_of(".") != std::string::npos && requestedFile.find_last_of("/") != std::string::npos)
+				isExt = requestedFile.find_last_of(".") - requestedFile.find_last_of("/");
+			if (location.getIndex().empty() && isExt < 0)
+				requestedFile += "/" + server.getIndex();
+			else if (!location.getIndex().empty() && isExt < 0)
+				requestedFile += "/" + location.getIndex();
 		}
 	}
 	else if (location.getAutoindex() == true)
@@ -84,13 +87,15 @@ std::string Response::_createPath()
 	}
 	else
 	{
-		std::cout << uriPath << std::endl;
 		if (!location.getAlias().empty())
 			uriPath = location.getAlias();
-		std::cout << uriPath << std::endl;
-		if (location.getIndex().empty())
+		int isExt = -1;
+		requestedFile += uriPath;
+		if (requestedFile.find_last_of(".") != std::string::npos && requestedFile.find_last_of("/") != std::string::npos)
+			isExt = requestedFile.find_last_of(".") - requestedFile.find_last_of("/");
+		if (location.getIndex().empty() && isExt < 0)
 			requestedFile += uriPath + "/" + server.getIndex();
-		else
+		else if (!location.getIndex().empty() && isExt < 0)
 			requestedFile += uriPath + "/" + location.getIndex();
 	}
 	return (requestedFile);
@@ -139,7 +144,7 @@ int Response::_handlePush(std::istringstream& body, std::string boundary)
 		if (line == boundary)
 		{
 			if (inFile && !filename.empty() && !type.empty() && !content.empty())
-			{
+			{s->_httpVersion != "HTTP/1.1")
 				if (_makeFile(filename, type, content) == 0)
 					return 500;
 				filename.clear();

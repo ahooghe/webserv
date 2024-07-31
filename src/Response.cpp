@@ -63,6 +63,7 @@ int Response::_getRequest()
 		return (_getRequestIndex());
 	if (filetype != 0)
 		return filetype;
+	std::cout << path << std::endl;
 	file.open(path.c_str());
 	if (file.is_open())
 		ret << file.rdbuf();

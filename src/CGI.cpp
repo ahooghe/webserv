@@ -26,7 +26,7 @@ int CGI::execute()
         return 400;
     Server server = this->_request.getConfig().getServer(portServer);
     std::string cgiPath = server.getCgiPath(fileSuffix);
-    std::string filePath = server.getRoot() + this->_request.getUri();
+    std::string filePath = server13.getRoot() + this->_request.getUri();
     if (cgiPath.empty())
         return 400;
 
