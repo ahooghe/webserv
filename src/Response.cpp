@@ -142,6 +142,13 @@ int Response::_pushRequest()
 		else
 			return 405;
 	}
+	if (!filesuffix.empty() && !server.getCgiPath(filesuffix).empty())
+	{
+		CGI cgi(this->_request);
+		int status = cgi.executePush();
+		this->_response = cgi.getResponse();
+		return status;
+	}
 	std::map<std::string, std::string> headers = this->_request.getHeaders();
 	if (headers.find("Content-Type") == headers.end() || headers["Content-Type"].find("multipart/form-data") == std::string::npos)
 		return 400;
