@@ -116,8 +116,6 @@ void Request::_processRequest()
 			if (end != std::string::npos)
 				headerValue = headerValue.substr(0, end + 1);
 			
-			if (headerName == "Host" && headerValue.find_last_of(":") != std::string::npos && headerValue.find_last_of(":") > headerValue.length() - 6)
-				headerValue = headerValue.substr(0, headerValue.find_last_of(":"));
 			if (headerName.empty() || headerValue.empty())
 				throw std::exception();
 

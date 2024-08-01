@@ -1,4 +1,5 @@
 #include "../include/Config.hpp"
+#include <iostream>
 
 Config::Config(): _clientMaxBodySize(1000000), _ports(NULL)
 {
@@ -132,6 +133,10 @@ void Config::initConfig(const char *path)
 					size_t end = host.find_last_not_of(" \t");
 					if (end != std::string::npos)
 						host = host.substr(0, end + 1);
+					host += ":";
+					std::stringstream portss;
+					portss << port;
+					host += portss.str();
 					this->_portHost[host] = port;
 				}
 

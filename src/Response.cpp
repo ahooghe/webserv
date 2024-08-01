@@ -1,5 +1,5 @@
 #include "../include/Response.hpp"
-
+#include <iostream>
 Response::Response()
 {
 }
@@ -73,6 +73,8 @@ int Response::_getRequest()
 		return (_getRequestIndex());
 	if (filetype != 0)
 		return filetype;
+	if (_isFile(path) != 0)
+		return _isFile(path);
 	file.open(path.c_str());
 	if (file.is_open())
 		ret << file.rdbuf();
