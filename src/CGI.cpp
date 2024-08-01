@@ -81,6 +81,7 @@ int CGI::execute()
 		{
 			buff[readBytes] = '\0';
 			this->_response += buff;
+			this->_response += "\r\n";
 		}
 		close(pipefd[0]);
 	}

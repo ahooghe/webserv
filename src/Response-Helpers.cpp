@@ -3,7 +3,7 @@
 int Response::_makeFile(const std::string &filename, const std::string &type, const std::string &content)
 {
 	std::ofstream file;
-	if (type == "text/plain")
+	if (type.find("text") != std::string::npos)
 	{
 		file.open(filename.c_str());
 	}
@@ -15,7 +15,7 @@ int Response::_makeFile(const std::string &filename, const std::string &type, co
 	if (!file.is_open())
 		return 0;
 
-	if (type == "text/plain")
+	if (type.find("text") != std::string::npos)
 	{
 		file << content;
 	}
@@ -158,7 +158,7 @@ int Response::_handlePush(std::istringstream& body, std::string boundary)
 			size_t pos = line.find("filename=");
 			if (pos != std::string::npos)
 			{
-				filename = line.substr(pos + 10);
+				filename = line.substr(pos + 9);
 				if (filename[0] == '"' && filename[filename.size() - 1] == '"')
 					filename = filename.substr(1, filename.size() - 2);
 			}

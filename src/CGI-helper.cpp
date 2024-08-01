@@ -28,7 +28,30 @@ char **CGI::_buildEnv(std::string filePath)
         envVars["PATH_INFO"] = this->_request.getUri();
         envVars["REDIRECT_STATUS"] = "200";
 
-        char **env = new char *[envVars.size() + 1];
+	int amountofX_POST = 0;
+	std::string x_POST;
+	std::map<int, std::string> x_post;
+	if (this->_request.getMethod() == "POST")
+	{
+		x_POST = this->_request.getHeaders()["X_POST"];
+		while (!x_POST.empty())
+		{
+			if (x_POST.find_first_of("+") != std::string::npos)
+			{
+				x_post[amountofX_POST] = x_POST.substr(0, x_POST.find_first_of("+"));
+				x_POST = x_POST.substr(x_POST.find_first_of("+"));
+				amountofX_POST++;
+			}
+			else
+			{
+				x_post[amountofX_POST] = x_POST.substr(0, x_POST.find_first_of("+"));
+				x_POST = x_POST.substr(x_POST.find_first_of("+"));
+				amountofX_POST++;
+			}
+		}
+	}
+
+        char **env = new char *[envVars.size() + amountofX_POST + 1];
         env[envVars.size()] = NULL;
 
         int i = 0;
@@ -39,6 +62,13 @@ char **CGI::_buildEnv(std::string filePath)
             std::strcpy(env[i], tmp.c_str());
             i++;
         }
+	for (int j = 0; j < amountofX_POST; j++)
+	{
+		std::string tmp = "X_POST=" + x_post[j];
+		env[i + j] = new char[tmp.size() + 1];
+		std::strcpy(env[i + j], tmp.c_str());
+		j++;
+	}
         return env;
     }
     catch (const std::exception &e)

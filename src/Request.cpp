@@ -124,7 +124,9 @@ void Request::_processRequest()
 			if (this->_headers.find(headerName) == this->_headers.end())
 				this->_headers[headerName] = headerValue;
 			else
-				throw std::exception();
+			{
+				this->_headers[headerName] += "+" + headerValue;
+			}
 		}
 		while (std::getline(iss, line))
 		{

@@ -142,16 +142,75 @@ int Response::_pushRequest()
 		else
 			return 405;
 	}
+	std::string filesuffix;
+	if (this->_request.getUri().find_last_of(".") > this->_request.getUri().find_last_of("/"))
+		filesuffix = this->_request.getUri().substr(this->_request.getUri().find_last_of("."));
+
+	std::string host = this->_request.getHeaders()["Host"];
+	int port = this->_request.getConfig().getPortHost(host);
+	Server server = this->_request.getConfig().getServer(port);
 	if (!filesuffix.empty() && !server.getCgiPath(filesuffix).empty())
 	{
 		CGI cgi(this->_request);
-		int status = cgi.executePush();
-		this->_response = cgi.getResponse();
-		return status;
+		int status = cgi.execute();
+		if (status != 0)
+			return status;
+		std::stringstream iss(cgi.getResponse());	
+		
+		int statusCgi, length;
+		std::string line, httpVersion, responseFlag, contentType, contentLength, body, contentDisposition, filename;
+		if (std::getline(iss, line))
+		{
+			std::stringstream firstLine(line);
+			firstLine >> line >> statusCgi >> responseFlag;
+			if (statusCgi != 200)
+				return statusCgi;
+		}
+		if (std::getline(iss, line) && (line.find("Content-Type:") != std::string::npos))
+			contentType = line.substr(line.find("Content-Type:") + 13);
+		if (std::getline(iss, line) && (line.find("Content-Length:") != std::string::npos))
+		{
+			contentLength = line.substr(line.find("Content-Length:") + 15);
+			std::stringstream content(contentLength);
+			content >> length;
+		}
+		if (length == 0 || length > this->_request.getConfig().getClientMaxBodySize())
+			return 413;
+		if (std::getline(iss, line) && (line.find("Content-Disposition:") + 20) != std::string::npos)
+		{
+			contentDisposition = line.substr(line.find("Content-Disposition") + 20);
+			if (contentDisposition.find("filename") != std::string::npos)
+				filename = contentDisposition.substr(contentDisposition.find("filename") + 9);
+			if (filename[0] == '"' && filename[filename.size() - 1] == '"')
+					filename = filename.substr(1, filename.size() - 2);
+		}
+		while (std::getline(iss, line))
+			body += line += "\r\n";
+				
+		if (contentType.find("html") != std::string::npos)
+		{
+			this->_response = body;
+			return 200;
+		}
+		else if (contentType.find("text") != std::string::npos)
+		{
+			if (_makeFile(filename, "text", body) == 0)
+				return 500;
+		}
+		else if (contentType.find("image") != std::string::npos || contentType.find("application") != std::string::npos)
+		{
+			if (_makeFile(filename, "binary", body) == 0)
+				return 500;
+		}
+		else
+			return 405;
 	}
 	std::map<std::string, std::string> headers = this->_request.getHeaders();
 	if (headers.find("Content-Type") == headers.end() || headers["Content-Type"].find("multipart/form-data") == std::string::npos)
-		return 400;
+	{
+		std::string path = _createPath();
+
+	}
 
 	std::string contentType = headers["Content-Type"];
 	size_t boundaryPos = contentType.find("boundary=");
