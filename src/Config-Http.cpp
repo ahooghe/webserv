@@ -1,5 +1,4 @@
 #include "../include/Config.hpp"
-#include <iostream>
 
 Config::Config(): _clientMaxBodySize(1000000), _ports(NULL)
 {

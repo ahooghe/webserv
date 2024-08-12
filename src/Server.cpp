@@ -6,7 +6,7 @@
 /*   By: ahooghe <ahooghe@student.s19.be>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/24 11:42:06 by brmajor           #+#    #+#             */
-/*   Updated: 2024/07/30 16:28:29 by ahooghe          ###   ########.fr       */
+/*   Updated: 2024/08/12 17:55:56 by ahooghe          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,6 @@
 #include "../include/Response.hpp"
 #include "../include/Request.hpp"
 #include "../include/Config.hpp"
-
-#include <netinet/tcp.h>
 
 Servers::Servers(Config config)
 {

@@ -5,6 +5,8 @@
 #include <dirent.h>
 #include <vector>
 #include <algorithm>
+#include <ctime>
+#include <cstdlib>
 
 #include "CGI.hpp"
 

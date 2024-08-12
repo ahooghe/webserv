@@ -68,6 +68,9 @@ std::string Request::getResponse()
 			case 413:
 				response += " 413 Payload Too Large\r\n\r\n" + makeErrorFile(this->_status);
 				break;
+			case 415:
+				response += " 415 Unsupported Media Type\r\n\r\n" + makeErrorFile(this->_status);
+				break;
 			case 500:
 				response += " 500 Internal Server Error\r\n\r\n" + makeErrorFile(this->_status);
 				break;

@@ -83,7 +83,7 @@ private:
 	std::map<int, std::string>	_errorPages;
 	std::map<std::string, int>	_portHost;
 
-	void								_checkErrorPages();
+	void						_checkErrorPages();
 
 public:
 	Config();

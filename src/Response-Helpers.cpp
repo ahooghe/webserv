@@ -62,16 +62,16 @@ std::string Response::_createPath()
 		if (uriWithoutLoc.find(".") != std::string::npos)
 		{
 			if (location.getAlias().empty())
-				requestedFile += uriPath + uriWithoutLoc;
+				requestedFile += "/" + uriPath + "/" + uriWithoutLoc;
 			else
-				requestedFile += location.getAlias() + "/" + uriWithoutLoc;
+				requestedFile += "/" + location.getAlias() + "/" + uriWithoutLoc;
 		}
 		else
 		{
 			if (!location.getAlias().empty())
-				uriPath = location.getAlias();
+				uriPath = "/" + location.getAlias();
 			int isExt = -1;
-			requestedFile += uriPath + uriWithoutLoc;
+			requestedFile += "/" + uriPath + "/" + uriWithoutLoc;
 			if (requestedFile.find_last_of(".") != std::string::npos && requestedFile.find_last_of("/") != std::string::npos)
 				isExt = requestedFile.find_last_of(".") - requestedFile.find_last_of("/");
 			if (location.getIndex().empty() && isExt < 0)
@@ -82,20 +82,20 @@ std::string Response::_createPath()
 	}
 	else if (location.getAutoindex() == true)
 	{
-		requestedFile += uriPath;
+		requestedFile += "/" + uriPath;
 	}
 	else
 	{
 		if (!location.getAlias().empty())
-			uriPath = location.getAlias();
+			uriPath = "/" + location.getAlias();
 		int isExt = -1;
-		requestedFile += uriPath;
+		requestedFile += "/" + uriPath;
 		if (requestedFile.find_last_of(".") != std::string::npos && requestedFile.find_last_of("/") != std::string::npos)
 			isExt = requestedFile.find_last_of(".") - requestedFile.find_last_of("/");
 		if (location.getIndex().empty() && isExt < 0)
-			requestedFile += uriPath + "/" + server.getIndex();
+			requestedFile += "/" + server.getIndex();
 		else if (!location.getIndex().empty() && isExt < 0)
-			requestedFile += uriPath + "/" + location.getIndex();
+			requestedFile += "/" + location.getIndex();
 	}
 	return (requestedFile);
 }

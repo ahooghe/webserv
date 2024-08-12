@@ -5,6 +5,7 @@
 
 #include <sys/wait.h>
 #include <cstring>
+#include <sys/time.h>
 
 #include "Request.hpp"
 
@@ -15,7 +16,7 @@ class CGI
 		std::string _response;
 		
 		CGI();
-		char **_buildEnv(std::string filePath);
+		char	**_buildEnv(std::string filePath);
 	
 	public:
 		CGI(Request request);

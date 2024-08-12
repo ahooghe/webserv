@@ -20,6 +20,7 @@
 #include <strings.h>
 #include <fcntl.h>
 #include <vector>
+#include <netinet/tcp.h>
 
 #include "Request.hpp"
 

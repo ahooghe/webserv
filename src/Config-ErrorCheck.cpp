@@ -21,6 +21,8 @@ void Config::errCheck()
 		_errorPages[405] = "default_files/err_pages/405.html";
 	if (_errorPages.find(413) == _errorPages.end())
 		_errorPages[413] = "default_files/err_pages/413.html";
+	if (_errorPages.find(415) == _errorPages.end())
+		_errorPages[415] = "default_files/err_pages/415.html";
 	if (_errorPages.find(500) == _errorPages.end())
 		_errorPages[500] = "default_files/err_pages/500.html";
 	if (_errorPages.find(501) == _errorPages.end())

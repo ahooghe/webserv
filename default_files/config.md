@@ -31,19 +31,17 @@ The following is an example:
 ```conf
 server <port>
 {
-    server_name <servername>;
-    root <path to root>;
-    index <index file>;
-    cgi_path <cgi file suffix> <path to cgi script>;
-    location <path to location>
-    {
-        listen_http on;
-        listen_https on;
-        alias <path to actual files>;
-        auto_index on;
-        index <index file>;
-        limit_except <HTTP Method>
-    }
+	server_name <servername>;
+	root <path to root>;
+	index <index file>;
+	cgi_path <cgi file suffix> <path to cgi script>;
+	location <path to location>
+	{
+		alias <path to actual files>;
+		auto_index on;
+		index <index file>;
+		limit_except <HTTP Method>;
+	}
 }
 ```
 
@@ -59,21 +57,21 @@ error_page 404 default_files/err_pages/404.html;
 
 server 80
 {
-    server_name localhost;
-    root /var/www/html;
-    index index.html;
-    cgi_path .cgi /var/run/php/php7.4-fpm.sock;
-    
-    location / # This will serve files straight from the root directory
-    {
-        auto_index on;
-        listen_https on;
-    }
+	server_name localhost;
+	root /var/www/html;
+	index index.html;
+	cgi_path .cgi /var/run/php/php7.4-fpm.sock;
+	
+	location / # This will serve files straight from the root directory
+	{
+		auto_index on;
+		listen_https on;
+	}
 
-    location /forum
-    {
-        alias /forumfiles;
-        listen_https on;
-    }
+	location /forum
+	{
+		alias /forumfiles;
+		listen_https on;
+	}
 }
 ```

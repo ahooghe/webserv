@@ -1,5 +1,4 @@
 #include "../include/Response.hpp"
-#include <iostream>
 Response::Response()
 {
 }
@@ -126,6 +125,14 @@ int Response::_deleteRequest()
 	return 500;
 }
 
+// Function to generate a unique file name
+std::string generateUniqueFileName(const std::string& extension) {
+    std::ostringstream oss;
+    std::time_t t = std::time(NULL);
+    oss << t << "_" << rand() << extension;
+    return oss.str();
+}
+
 int Response::_pushRequest()
 {
 	Location location = _getLocation();
@@ -153,18 +160,21 @@ int Response::_pushRequest()
 	Server server = this->_request.getConfig().getServer(port);
 	if (!filesuffix.empty() && !server.getCgiPath(filesuffix).empty())
 	{
+		if ((int)this->_request.getBody().size() > this->_request.getConfig().getClientMaxBodySize())
+			return 413;
 		CGI cgi(this->_request);
 		int status = cgi.execute();
-		if (status != 0)
+		if (status != 200)
 			return status;
-		std::stringstream iss(cgi.getResponse());	
-		
+		std::stringstream iss(cgi.getResponse());
+		if ((int)cgi.getResponse().size() > this->_request.getConfig().getClientMaxBodySize())
+			return 413;
 		int statusCgi, length;
 		std::string line, httpVersion, responseFlag, contentType, contentLength, body, contentDisposition, filename;
 		if (std::getline(iss, line))
 		{
 			std::stringstream firstLine(line);
-			firstLine >> line >> statusCgi >> responseFlag;
+			firstLine >> httpVersion >> statusCgi >> responseFlag;
 			if (statusCgi != 200)
 				return statusCgi;
 		}
@@ -188,7 +198,9 @@ int Response::_pushRequest()
 		}
 		while (std::getline(iss, line))
 			body += line += "\r\n";
-				
+		
+		if ((int)body.size() > this->_request.getConfig().getClientMaxBodySize())
+			return 413;
 		if (contentType.find("html") != std::string::npos)
 		{
 			this->_response = body;
@@ -208,28 +220,56 @@ int Response::_pushRequest()
 			return 405;
 	}
 	std::map<std::string, std::string> headers = this->_request.getHeaders();
-	if (headers.find("Content-Type") == headers.end() || headers["Content-Type"].find("multipart/form-data") == std::string::npos)
+	if (headers.find("Content-Type") == headers.end() || headers["Content-Type"].find("multipart/form-data") != std::string::npos)
 	{
-		std::string path = _createPath();
-
+		std::string contentType = headers["Content-Type"];
+		size_t boundaryPos = contentType.find("boundary=");
+		if (boundaryPos == std::string::npos)
+			return 400;
+		std::string boundary = "--" + contentType.substr(boundaryPos + 9);
+		if (this->_request.getBody().empty())
+			return 400;
+		if ((int)this->_request.getBody().size() > this->_request.getConfig().getClientMaxBodySize())
+			return 413;
+		std::istringstream body(this->_request.getBody());
+		return (_handlePush(body, boundary));
 	}
+	else
+	{
+		if (headers.find("Content-Type") == headers.end() || this->_request.getBody().empty())
+			return 400;
+		std::string contentType = headers["Content-Type"];
+		std::string body = this->_request.getBody();
 
-	std::string contentType = headers["Content-Type"];
-	size_t boundaryPos = contentType.find("boundary=");
-	if (boundaryPos == std::string::npos)
-		return 400;
+		std::string filename;
+		if (contentType.find("text") != std::string::npos)
+			filename = generateUniqueFileName(".txt");
+		else if (contentType.find("image") != std::string::npos)
+			filename = generateUniqueFileName(".img");
+		else if (contentType.find("application") != std::string::npos)
+			filename = generateUniqueFileName(".bin");
+		else
+			return 415;
+		
+		std::string fullpath = server.getRoot();
+		if (location.getAlias().empty())
+			fullpath += this->_request.getUri().substr(0, this->_request.getUri().find_last_of("/"));
+		else
+			fullpath += location.getAlias();
+		
+		fullpath += filename;
+		
+		char absPath[PATH_MAX];
+		realpath(fullpath.c_str(), absPath);
+		if (absPath == NULL)
+			return 500;
 
-	std::string boundary = "--" + contentType.substr(boundaryPos + 9);
-	if (this->_request.getBody().empty())
-		return 400;
-	
-	if ((int)this->_request.getBody().size() > this->_request.getConfig().getClientMaxBodySize())
-		return 413;
-	std::istringstream body(this->_request.getBody());
-
-	int statusPush = _handlePush(body, boundary);
-
-	return statusPush;
+		if ((int)body.size() > this->_request.getConfig().getClientMaxBodySize())
+			return 413;
+		if (_makeFile(absPath, contentType, body) == 0)
+			return 500;
+		return 201;
+	}
 }
 
 Location Response::_getExtensionLocation()

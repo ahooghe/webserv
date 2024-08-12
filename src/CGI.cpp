@@ -1,5 +1,4 @@
 #include "../include/CGI.hpp"
-
 CGI::CGI()
 {
 }
@@ -11,6 +10,10 @@ CGI::~CGI()
 CGI::CGI(Request request)
 {
 	this->_request = request;
+}
+
+void alarmHandler(int sig) {
+    (void)sig;
 }
 
 int CGI::execute()
@@ -68,8 +71,36 @@ int CGI::execute()
 	{
 		close(pipefd[1]);
 		int status;
-		waitpid(pid, &status, 0);
 
+		struct sigaction sa;
+        memset(&sa, 0, sizeof(sa));
+        sa.sa_handler = alarmHandler;
+        sigaction(SIGALRM, &sa, NULL);
+
+        struct itimerval timer;
+        timer.it_value.tv_sec = 5;
+        timer.it_value.tv_usec = 0;
+        timer.it_interval.tv_sec = 0;
+        timer.it_interval.tv_usec = 0;
+        setitimer(ITIMER_REAL, &timer, NULL);
+
+		int result = waitpid(pid, &status, 0);
+
+		timer.it_value.tv_sec = 0;
+        timer.it_value.tv_usec = 0;
+        setitimer(ITIMER_REAL, &timer, NULL);
+
+		if (result == -1)
+		{
+			close(pipefd[0]);
+			return 500;
+		}
+		else if (result == 0)
+		{
+			kill(pid, SIGKILL);
+			close(pipefd[0]);
+			return 504;
+		}
 		if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
 		{
 			close(pipefd[0]);
