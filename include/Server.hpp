@@ -32,12 +32,15 @@ class	Request;
 class   Servers
 {
 	private:
+		std::vector<int>	_serverPorts;
 		std::vector<int>	_serverSockets;
 		int					_total_ports;
 		Config				_config;
 		fd_set				_current_sockets, _ready_sockets;
 
-	 public:
+		void				_closeAllSockets(std::vector<int>& sockets);
+		std::string			_intToString(int value); 
+	public:
 		Servers(Config config);
 		Servers();
 		~Servers();
@@ -45,7 +48,7 @@ class   Servers
 		void        createServerSocket();
 		int			makeSocket();
 		void        pingServer();
-		int         acceptConnection();
+		int         acceptConnection(int serverSocket);
 		void        receiveRequest(int connectionSocket);
 		void        setNonBlocking(int sockfd);
 		

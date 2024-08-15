@@ -28,6 +28,56 @@ int Response::_makeFile(const std::string &filename, const std::string &type, co
 	return 1;
 }
 
+std::string cleanPath(const std::string& path) 
+{
+    if (path.empty()) 
+    {
+        return path;
+    }
+
+    std::string cleanedPath;
+    bool lastWasSlash = false;
+
+    // Handle the case where the path starts with "./"
+    size_t startIndex = 0;
+    if (path.length() > 1 && path[0] == '.' && path[1] == '/') 
+    {
+        cleanedPath += "./";
+        startIndex = 2;
+    }
+
+    // Skip leading slashes
+    while (startIndex < path.length() && path[startIndex] == '/') 
+    {
+        ++startIndex;
+    }
+
+    for (size_t i = startIndex; i < path.length(); ++i) 
+    {
+        if (path[i] == '/') 
+        {
+            if (!lastWasSlash) 
+            {
+                cleanedPath += path[i];
+                lastWasSlash = true;
+            }
+        } 
+        else 
+        {
+            cleanedPath += path[i];
+            lastWasSlash = false;
+        }
+    }
+
+    // Remove trailing slash if it's not the root "/" or "./"
+    if (cleanedPath.length() > 1 && cleanedPath[cleanedPath.length() - 1] == '/' && cleanedPath != "./") 
+    {
+        cleanedPath.erase(cleanedPath.length() - 1);
+    }
+
+    return cleanedPath;
+}
+
 std::string Response::_createPath()
 {
 	std::string host = this->_request.getHeaders()["Host"];
@@ -44,10 +94,13 @@ std::string Response::_createPath()
 		if (server.getLocation(uriPath).getRealLocation() == false)
 		{
 			size_t slashPos = uriPath.find_last_of("/");
-			if (slashPos == 0)
-				break;
 			if (slashPos != std::string::npos)
 				uriPath = uriPath.substr(0, slashPos);
+			if (uriPath.empty())
+			{
+				location = server.getLocation("/");
+				break;
+			}
 		}
 		else
 		{
@@ -59,6 +112,13 @@ std::string Response::_createPath()
 	std::string uriWithoutLoc = this->_request.getUri().substr(uriPath.length());
 	if (!uriWithoutLoc.empty())
 	{
+		if (location.getAutoindex() == true)
+		{
+			if (_isFile(requestedFile + "/" + uriPath + "/" + uriWithoutLoc) == 1 || _isFile(requestedFile + "/" + uriPath + "/" + uriWithoutLoc) == 0)
+				return cleanPath(requestedFile + "/" + uriPath + "/" + uriWithoutLoc);
+		}
+		if (_isFile(requestedFile + "/" + uriPath + "/" + uriWithoutLoc) == 0)
+			return cleanPath(requestedFile + "/" + uriPath + "/" + uriWithoutLoc);
 		if (uriWithoutLoc.find(".") != std::string::npos)
 		{
 			if (location.getAlias().empty())
@@ -97,7 +157,7 @@ std::string Response::_createPath()
 		else if (!location.getIndex().empty() && isExt < 0)
 			requestedFile += "/" + location.getIndex();
 	}
-	return (requestedFile);
+	return cleanPath(requestedFile);
 }
 
 int Response::_isFile(std::string path)

@@ -6,7 +6,7 @@
 /*   By: ahooghe <ahooghe@student.s19.be>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/24 11:42:06 by brmajor           #+#    #+#             */
-/*   Updated: 2024/08/12 17:55:56 by ahooghe          ###   ########.fr       */
+/*   Updated: 2024/08/15 22:53:10 by ahooghe          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,13 +14,22 @@
 #include "../include/Response.hpp"
 #include "../include/Request.hpp"
 #include "../include/Config.hpp"
+#include <sstream>
+#include <iostream>
 
 Servers::Servers(Config config)
 {
 	this->_config = config;
+	this->_total_ports = _config.getTotalports();
+	std::map<std::string, int> portHosts = this->_config.getPortHosts();
+
+    for (std::map<std::string, int>::iterator it = portHosts.begin(); it != portHosts.end(); ++it)
+    {
+        this->_serverPorts.push_back(it->second);
+	}
+	
+	FD_ZERO(&this->_current_sockets);
 	createServerSocket();
-
-
 }
 
 Servers::Servers()
@@ -31,153 +40,190 @@ Servers::~Servers()
 {   
 }
 
+void Servers::_closeAllSockets(std::vector<int>& sockets) 
+{
+	for (std::vector<int>::iterator sock = sockets.begin(); sock != sockets.end(); ++sock)
+		close(*sock);
+	sockets.clear();
+}
+
+std::string Servers::_intToString(int value) {
+	std::stringstream ss;
+	ss << value;
+	return ss.str();
+}
+
 void	Servers::createServerSocket()
 {
-	sockaddr_in		addr;
-	_total_ports = _config.getTotalports();
-	int		*ports = _config.getPorts();
-	int		reuse[_total_ports];
-
-	for (int i = 0; i < _total_ports; ++i)
+	std::vector<int> serverSockets;
+	for (int i = 0; i < this->_total_ports; i++)
 	{
-		bzero(&addr, sizeof(addr));
-		addr.sin_family = AF_INET;
-		addr.sin_addr.s_addr = htonl(INADDR_ANY);
-		addr.sin_port = htons(ports[i]);
-	
-		_serverSockets.push_back(makeSocket());
-		reuse[i] = 1;
-		if (setsockopt(_serverSockets[i], SOL_SOCKET, SO_REUSEADDR, &reuse[i], sizeof(reuse[i])) < 0)
+		int port = this->_serverPorts[i];
+		int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+		if (serverSocket < 0)
 		{
-			perror("error: setsockopt");
+			_closeAllSockets(serverSockets);
+			throw std::runtime_error("Error creating socket for port " + _intToString(port));
 		}
-		if ((bind(_serverSockets[i], (struct sockaddr*)&addr, sizeof(sockaddr))) == -1)
+
+		int sockOpt = 1;
+		if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &sockOpt, sizeof(sockOpt)) < 0)
 		{
-			perror("error: bind");
+			close(serverSocket);
+			_closeAllSockets(serverSockets);
+			throw std::runtime_error("Error setting socket options for port " + _intToString(port));
 		}
-		if ((listen(_serverSockets[i], 10)) == -1)
+
+		struct sockaddr_in serverAddr;
+		bzero(&serverAddr, sizeof(serverAddr));
+		serverAddr.sin_family = AF_INET;
+		serverAddr.sin_addr.s_addr = INADDR_ANY;
+		serverAddr.sin_port = htons(port);
+
+		if (bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0)
 		{
-			perror("error: listen");
+			close(serverSocket);
+			_closeAllSockets(serverSockets);
+			throw std::runtime_error("Error binding socket to port " + _intToString(port));
 		}
-		FD_ZERO(&_current_sockets);
-		FD_SET(_serverSockets[i], &_current_sockets);
+
+		if (listen(serverSocket, SOMAXCONN) < 0)
+		{
+			close(serverSocket);
+			_closeAllSockets(serverSockets);
+			throw std::runtime_error("Error listening on port " + _intToString(port));
+		}
+
+		setNonBlocking(serverSocket);
+		serverSockets.push_back(serverSocket);
+		FD_SET(serverSocket, &this->_current_sockets);
 	}
+	this->_serverSockets = serverSockets;
 }
 
 int	Servers::makeSocket()
 {
-	int	serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-	if (serverSocket == -1)
-	{
-		perror("error: socket");
-	}
-	return (serverSocket);
+	return -1;
 }
 
 void Servers::pingServer()
 {
-	_ready_sockets = _current_sockets;
-		
-	if (select(FD_SETSIZE, &_ready_sockets, NULL, NULL, NULL) < 0)
+	struct timeval timeout;
+	timeout.tv_sec = 5;
+	timeout.tv_usec = 0;
+
+	FD_ZERO(&this->_ready_sockets);
+	this->_ready_sockets = _current_sockets;
+
+	int activity = select(FD_SETSIZE, &this->_ready_sockets, NULL, NULL, &timeout);
+	if (activity < 0)
 	{
-		perror("error: select");
+		perror("select");
+		return;
 	}
-	for (int j = 0; j < _total_ports; j++)
+	
+	for (int i = 0; i < FD_SETSIZE; i++)
 	{
-		for (int i = 0; i < FD_SETSIZE; i++)
+		if (FD_ISSET(i, &this->_ready_sockets))
 		{
-			if (FD_ISSET(i, &_ready_sockets))
+			if (std::find(this->_serverSockets.begin(), this->_serverSockets.end(), i) != this->_serverSockets.end())
 			{
-				//new connection
-				if (i == _serverSockets[j])
-				{
-					int	connectionSocket = acceptConnection();
-					FD_SET(connectionSocket, &_current_sockets);
-				}
-				//handle the connection
-				else
-				{
-					receiveRequest(i);
-					FD_CLR(i, &_current_sockets);
-				}
+				acceptConnection(i);
+			}
+			else
+			{
+				receiveRequest(i);
 			}
 		}
 	}
 }
 
-int		Servers::acceptConnection()
+int		Servers::acceptConnection(int serverSocket)
 {
-	int	connectionSocket;
-
-	sockaddr	socketAddress;
-	socklen_t	socketAdressLen = sizeof(socketAddress);
-	
-	for (int i = 0; i < _total_ports; i++)
+	struct sockaddr_in clientAddr;
+	socklen_t clientLen = sizeof(clientAddr);
+	int connectionSocket  =accept(serverSocket, (struct sockaddr*)&clientAddr, &clientLen);
+	if (connectionSocket < 0)
 	{
-		if ((connectionSocket = accept(_serverSockets[i], &socketAddress, &socketAdressLen)) != -1)
-		{
-			sockaddr_in* addr_in = (sockaddr_in *)&socketAddress;
-			char ip[INET_ADDRSTRLEN];
-			inet_ntop(AF_INET, &(addr_in->sin_addr), ip, INET_ADDRSTRLEN);
-			//std::cout << "IPv4 Address: " << ip << ", Port: " << ntohs(addr_in->sin_port) << std::endl;
-			return (connectionSocket);
-		}
+		perror ("accept error");
+		return -1;
 	}
-	return (-1);
+
+	setNonBlocking(connectionSocket);
+	
+	FD_SET(connectionSocket, &this->_current_sockets);
+	return connectionSocket;
 }
 
 void	Servers::receiveRequest(int connectionSocket)
-{	
-	char                 buffer[BUFSIZE];
-	ssize_t              bytesRead;
-
-	bzero(buffer, BUFSIZE);
-	setNonBlocking(connectionSocket);
-	std::string request_string;
+{
+	char buffer[BUFSIZE];
+	std::string requestStr;
+	
 	while (true)
 	{
-		bytesRead = recv(connectionSocket, buffer, sizeof(buffer) - 1, 0);
-		buffer[bytesRead] = '\0';
-		if (bytesRead > 0) {
-			request_string.append(buffer, bytesRead);
+		int bytesReceived = recv(connectionSocket, buffer, BUFSIZE - 1, 0);
+		if (bytesReceived < 0)
+		{
+			perror("recv error");
+			close(connectionSocket);
+			FD_CLR(connectionSocket, &this->_current_sockets);
+			return;
 		}
-		if (request_string.find("\r\n\r\n") != std::string::npos)
-			break;
-		else if (bytesRead == 0)
+		buffer[bytesReceived] = '\0';
+		requestStr.append(buffer);
+		if (bytesReceived == 0 || requestStr.find("\r\n\r\n") != std::string::npos)
 			break;
 	}
-	if (!request_string.empty())
+
+	if (requestStr.empty())
 	{
-		Request request(this->_config, request_string);
-    	//std::cerr << "Request received, it was:\n" << request_string << std::endl;
-		request.execute();
-		std::string response = request.getResponse();
-		send(connectionSocket, response.c_str(), response.size(), 0);
-
-
-		if (response.find("keep-alive") != std::string::npos)
+		close(connectionSocket);
+		FD_CLR(connectionSocket, &this->_current_sockets);
+		return;
+	}
+	
+	Request request(this->_config, requestStr);
+	request.execute();
+	std::string response = request.getResponse();
+	int bytesSent = send(connectionSocket, response.c_str(), response.length(), 0);
+	
+	if (bytesSent < 0)
+	{
+		perror("send error");
+		close(connectionSocket);
+		FD_CLR(connectionSocket, &this->_current_sockets);
+		return;
+	}
+	if (requestStr.find("keep-alive") == std::string::npos)
+	{
+		if (shutdown(connectionSocket, SHUT_WR) < 0)
 		{
+			perror("shutdown error");
 			close(connectionSocket);
+			FD_CLR(connectionSocket, &this->_current_sockets);
 		}
-		else if (shutdown(connectionSocket, SHUT_WR) < 0) {
-        	perror("shutdown error");
-    	}
 	}
 	else
+	{
 		close(connectionSocket);
+		FD_CLR(connectionSocket, &this->_current_sockets);
+	}
+	
 }
 
 void    Servers::setNonBlocking(int sockfd)
 {
 	int flags = fcntl(sockfd, F_GETFL, 0);
-	if (flags == -1) {
-		perror("fcntl failed");
-		return ;
-	}
+    if (flags == -1) {
+        perror("fcntl F_GETFL");
+        close(sockfd);
+        throw std::runtime_error("Error getting socket flags");
+    }
 
-	if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) == -1) {
-		perror("fcntl failed");
-		return ;
-	}
-	return ;
+    if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) == -1) {
+        perror("fcntl F_SETFL");
+        close(sockfd);
+        throw std::runtime_error("Error setting socket to non-blocking");
+    }
 }

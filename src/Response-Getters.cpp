@@ -1,10 +1,11 @@
 #include "../include/Response.hpp"
-
+#include <iostream>
 int Response::_getRequestIndex()
 {
 	std::string path = _createPath();
 	DIR *dir;
 	struct dirent *entry;
+	
 	std::vector<std::string> entries;
 
 	if ((dir = opendir(path.c_str())) == NULL)
@@ -18,11 +19,12 @@ int Response::_getRequestIndex()
 	closedir(dir);
 	std::sort(entries.begin(), entries.end());
 	std::stringstream html;
-	html << "<html><head><title>Index of " << path << "</title></head><body>";
-	html << "<h1>Index of " << path << "</h1><ul>";
-
+	html << "<html><head><title>Index of " << path.substr(path.find_last_of("/")) << "</title></head><body>";
+	html << "<h1>Index of " << path.substr(path.find_last_of("/")) << "</h1><ul>";
+	if (path[path.length() - 1] != '/')
+		path += '/';
 	for (std::vector<std::string>::iterator it = entries.begin(); it != entries.end(); it++)
-		html << "<li><a href=\"" << *it << "\">" << *it << "</a></li>";
+		html << "<li><a href=\"" << path << *it << "\">" << *it << "</a></li>";
 	html << "</ul></body></html>";
 
 	this->_response = html.str();

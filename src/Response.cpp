@@ -34,14 +34,15 @@ std::string Response::getResponse()
 {
 	return this->_response;
 }
-
+#include <iostream>
 int Response::_getRequest()
 {
+	std::cout << "Meow" << std::endl;
 	std::ifstream file;
 	std::stringstream ret;
 	Location location = _getLocation();
 	std::string path = _createPath();
-	int filetype = _isFile(path);
+	std::cout << path << std::endl;
 	if (location.getRealLocation() == false)
 		return 400;
 	if (location.getGet() == false)
@@ -68,11 +69,9 @@ int Response::_getRequest()
 		this->_response = cgi.getResponse();
 		return status;
 	}
-	if (filesuffix.empty())
+	if (_isFile(path) == 1)
 		return (_getRequestIndex());
-	if (filetype != 0)
-		return filetype;
-	if (_isFile(path) != 0)
+	else if (_isFile(path) != 0)
 		return _isFile(path);
 	file.open(path.c_str());
 	if (file.is_open())
